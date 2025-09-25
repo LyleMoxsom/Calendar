@@ -1,0 +1,1541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Focus Flow Calendar</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      color-scheme: light dark;
+      --surface: #0b0b0f;
+      --surface-alt: #15151f;
+      --text: #f2f3f5;
+      --muted: rgba(242, 243, 245, 0.65);
+      --accent: #6a5acd;
+      --accent-soft: rgba(106, 90, 205, 0.16);
+      --grid-line: rgba(255, 255, 255, 0.06);
+      --shadow: 0 24px 48px rgba(0, 0, 0, 0.25);
+      --radius-lg: 22px;
+      --radius-md: 16px;
+      --radius-sm: 12px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: radial-gradient(circle at top right, rgba(106, 90, 205, 0.12), transparent 45%),
+                  radial-gradient(circle at bottom left, rgba(255, 105, 180, 0.18), transparent 55%),
+                  var(--surface);
+      color: var(--text);
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      line-height: 1.4;
+      padding: 40px clamp(24px, 5vw, 72px);
+      display: flex;
+      justify-content: center;
+    }
+
+    .app-shell {
+      width: min(1200px, 100%);
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .app-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .app-header h1 {
+      margin: 0;
+      font-family: 'Space Grotesk', 'Inter', sans-serif;
+      font-size: clamp(28px, 4vw, 44px);
+      letter-spacing: -0.02em;
+    }
+
+    .tagline {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 15px;
+      max-width: 420px;
+    }
+
+    .time-block {
+      display: grid;
+      gap: 6px;
+      text-align: right;
+      font-size: 15px;
+      color: var(--muted);
+      padding: 12px 18px;
+      background: rgba(255, 255, 255, 0.04);
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(12px);
+      box-shadow: var(--shadow);
+    }
+
+    .time-block .current-time {
+      font-size: 20px;
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .month-nav {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 18px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(14px);
+      box-shadow: var(--shadow);
+    }
+
+    .month-nav button {
+      appearance: none;
+      border: none;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-weight: 600;
+      font-size: 22px;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      transition: transform 0.2s ease, background 0.2s ease;
+    }
+
+    .month-nav button:hover {
+      transform: translateY(-1px) scale(1.05);
+      background: rgba(106, 90, 205, 0.25);
+    }
+
+    .month-nav h2 {
+      margin: 0;
+      font-size: clamp(20px, 3vw, 28px);
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+
+    .control-buttons {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      appearance: none;
+      border: none;
+      padding: 12px 18px;
+      border-radius: var(--radius-sm);
+      font-weight: 600;
+      font-size: 14px;
+      letter-spacing: 0.01em;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+      box-shadow: 0 18px 30px rgba(106, 90, 205, 0.35);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 16px 32px rgba(106, 90, 205, 0.4);
+    }
+
+    .btn-ghost {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .btn-ghost:hover {
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .calendar-card {
+      background: rgba(255, 255, 255, 0.04);
+      border-radius: var(--radius-lg);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 20px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+      position: relative;
+      overflow: visible;
+    }
+
+    .weekday-row {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 12px;
+      color: var(--muted);
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+    }
+
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 10px;
+      overflow: visible;
+    }
+
+    .day {
+      position: relative;
+      background: rgba(11, 11, 15, 0.6);
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      min-height: 130px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+                  box-shadow 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+                  border 0.2s ease,
+                  background 0.2s ease;
+      overflow: hidden;
+      transform-origin: center;
+      will-change: transform;
+      z-index: 1;
+    }
+
+    .day::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      box-shadow: 0 0 0 0 rgba(106, 90, 205, 0.4);
+      opacity: 0;
+      transition: opacity 0.35s ease, box-shadow 0.35s ease;
+      pointer-events: none;
+    }
+
+    .day:is(:hover, .drag-over) {
+      transform: scale(1.08);
+      border-color: rgba(255, 255, 255, 0.18);
+      background: rgba(21, 21, 31, 0.82);
+      z-index: 5;
+      box-shadow: 0 28px 60px rgba(0, 0, 0, 0.45);
+    }
+
+    .day.selecting {
+      border-color: rgba(255, 255, 255, 0.28);
+      background: rgba(36, 32, 52, 0.86);
+      box-shadow: 0 0 0 3px rgba(106, 90, 205, 0.32);
+      z-index: 4;
+    }
+
+    .day:is(:hover, .drag-over)::after {
+      opacity: 1;
+      box-shadow: 0 0 0 8px rgba(106, 90, 205, 0.18);
+    }
+
+    .day.selecting::after {
+      opacity: 1;
+      box-shadow: 0 0 0 6px rgba(106, 90, 205, 0.18);
+    }
+
+    .day.empty {
+      background: rgba(255, 255, 255, 0.02);
+      border-style: dashed;
+      border-color: rgba(255, 255, 255, 0.05);
+    }
+
+    .day-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .day-number {
+      font-weight: 700;
+      font-size: 16px;
+      letter-spacing: 0.06em;
+    }
+
+    .day-number .weekday {
+      display: block;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--muted);
+      letter-spacing: 0.15em;
+      margin-top: 4px;
+    }
+
+    .add-task-btn {
+      appearance: none;
+      border: none;
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text);
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: 18px;
+      cursor: pointer;
+      transition: background 0.2s ease, transform 0.2s ease;
+    }
+
+    .add-task-btn:hover {
+      background: rgba(255, 255, 255, 0.12);
+      transform: translateY(-1px);
+    }
+
+    .task-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex: 1;
+      min-height: 24px;
+      max-height: 88px;
+      overflow: hidden;
+      transition: max-height 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
+    }
+
+    .day:is(:hover, .drag-over) .task-list {
+      max-height: clamp(220px, 52vh, 480px);
+      overflow: auto;
+      padding-right: 4px;
+    }
+
+    .day:is(:hover, .drag-over) .task-list::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .day:is(:hover, .drag-over) .task-list::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.18);
+      border-radius: 999px;
+    }
+
+    .task-card {
+      position: relative;
+      background: rgba(255, 255, 255, 0.07);
+      border-radius: var(--radius-sm);
+      padding: 8px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      cursor: grab;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.2s ease;
+      min-height: 34px;
+    }
+
+    .task-card:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .task-card:active {
+      cursor: grabbing;
+      transform: scale(0.99);
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.35);
+    }
+
+    .task-card.is-dragging {
+      opacity: 0.6;
+      transform: scale(0.97);
+      box-shadow: 0 18px 32px rgba(0, 0, 0, 0.45);
+    }
+
+    .task-title {
+      font-weight: 600;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .task-title .task-name {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .task-time {
+      font-size: 12px;
+      color: var(--muted);
+      margin-left: auto;
+    }
+
+    .task-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.08);
+    }
+
+    .task-meta {
+      display: none;
+      flex-wrap: wrap;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .day:is(:hover, .drag-over) .task-meta {
+      display: flex;
+    }
+
+    .task-chip {
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--muted);
+    }
+
+    .priority-high {
+      background: rgba(255, 99, 132, 0.15);
+      color: #ff6f91;
+    }
+
+    .priority-medium {
+      background: rgba(255, 206, 86, 0.15);
+      color: #ffce56;
+    }
+
+    .priority-low {
+      background: rgba(75, 192, 192, 0.15);
+      color: #4bc0c0;
+    }
+
+    .day.today {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(106, 90, 205, 0.3);
+    }
+
+    .day.today .day-number {
+      color: var(--accent);
+    }
+
+    .focus-overlay-stack {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      display: grid;
+      align-content: stretch;
+      gap: 6px;
+      padding: 6px;
+    }
+
+    .focus-overlay {
+      border-radius: var(--radius-sm);
+      background: rgba(255, 255, 255, 0.12);
+      min-height: 12px;
+      mix-blend-mode: screen;
+    }
+
+    .project-tags {
+      display: none;
+      flex-wrap: wrap;
+      gap: 6px;
+      font-size: 11px;
+    }
+
+    .day:is(:hover, .drag-over) .project-tags {
+      display: flex;
+    }
+
+    .project-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.07);
+      color: var(--muted);
+    }
+
+    .project-tag span {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-flex;
+    }
+
+    .day-progress {
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--accent), rgba(255, 105, 180, 0.9));
+      border-radius: 0 4px 0 0;
+      pointer-events: none;
+    }
+
+    .focus-panel {
+      background: rgba(255, 255, 255, 0.04);
+      border-radius: var(--radius-lg);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 24px;
+      display: grid;
+      gap: 24px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+    }
+
+    .focus-panel h3 {
+      margin: 0;
+      font-size: 16px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .focus-panel .focus-hint {
+      margin: 0;
+      font-size: 13px;
+      line-height: 1.55;
+      color: var(--muted);
+    }
+
+    .focus-panel .focus-hint strong {
+      color: var(--accent);
+    }
+
+    body.shift-mode .focus-panel .focus-hint strong,
+    body.focus-selecting .focus-panel .focus-hint strong {
+      color: var(--text);
+    }
+
+    .focus-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .focus-card {
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 14px;
+      display: grid;
+      gap: 8px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .focus-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      opacity: 0.22;
+      background: var(--focus-color, rgba(255, 255, 255, 0.15));
+      pointer-events: none;
+    }
+
+    .focus-card strong {
+      font-size: 15px;
+      font-weight: 600;
+      z-index: 1;
+    }
+
+    .focus-card .range {
+      font-size: 13px;
+      color: var(--muted);
+      z-index: 1;
+    }
+
+    .focus-card button {
+      justify-self: flex-start;
+      z-index: 1;
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(8, 8, 12, 0.65);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 24px;
+    }
+
+    .modal-backdrop.open {
+      display: flex;
+    }
+
+    .modal {
+      width: min(420px, 100%);
+      background: rgba(14, 14, 20, 0.95);
+      border-radius: var(--radius-lg);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 24px;
+      box-shadow: 0 28px 60px rgba(0, 0, 0, 0.4);
+      display: grid;
+      gap: 18px;
+    }
+
+    .modal h2 {
+      margin: 0;
+      font-size: 22px;
+    }
+
+    .modal form {
+      display: grid;
+      gap: 14px;
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+    }
+
+    .field label {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+    }
+
+    .field input,
+    .field textarea,
+    .field select {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: var(--radius-sm);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text);
+      font-size: 14px;
+      font-family: inherit;
+    }
+
+    .field textarea {
+      min-height: 80px;
+      resize: vertical;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .modal-actions .spacer {
+      flex: 1;
+    }
+
+    .empty-state {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    body.shift-mode .day:not(.empty):not(.selecting) {
+      outline: 1px dashed rgba(106, 90, 205, 0.22);
+      outline-offset: -6px;
+    }
+
+    body.focus-selecting {
+      user-select: none;
+    }
+
+    body.focus-selecting .day,
+    body.focus-selecting .day * {
+      cursor: crosshair !important;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="app-header">
+      <div>
+        <h1>Focus Flow Calendar</h1>
+        <p class="tagline">Design a bold rhythm for your week. Sequence deep work, creative sprints, and essential tasks with intent.</p>
+      </div>
+      <div class="time-block">
+        <span class="current-date"></span>
+        <span class="current-time"></span>
+      </div>
+    </header>
+
+    <section class="controls">
+      <div class="month-nav">
+        <button id="prev-month" aria-label="Previous month">&#x2039;</button>
+        <h2 id="month-label"></h2>
+        <button id="next-month" aria-label="Next month">&#x203A;</button>
+      </div>
+      <div class="control-buttons">
+        <button class="btn btn-ghost" id="reset-calendar" title="Reset to today">Today</button>
+        <button class="btn btn-primary" id="add-focus">+ Focus Block</button>
+      </div>
+    </section>
+
+    <section class="calendar-card">
+      <div class="weekday-row">
+        <span>Sun</span>
+        <span>Mon</span>
+        <span>Tue</span>
+        <span>Wed</span>
+        <span>Thu</span>
+        <span>Fri</span>
+        <span>Sat</span>
+      </div>
+      <div class="calendar-grid" id="calendar-grid"></div>
+    </section>
+
+    <section class="focus-panel">
+      <h3>Focus Blocks</h3>
+      <p class="focus-hint"><strong>Shift + drag</strong> across the calendar to shade a stretch of days for a new focus block.</p>
+      <div class="focus-list" id="focus-list"></div>
+    </section>
+  </div>
+
+  <div class="modal-backdrop" id="task-modal">
+    <div class="modal">
+      <h2 id="task-modal-title">Plan a task</h2>
+      <form id="task-form">
+        <div class="field">
+          <label for="task-title">Task</label>
+          <input type="text" id="task-title" name="title" placeholder="What will you tackle?" required>
+        </div>
+        <div class="field">
+          <label for="task-category">Category</label>
+          <input type="text" id="task-category" name="category" placeholder="Deep Work, Admin, Studio, ...">
+        </div>
+        <div class="field">
+          <label for="task-priority">Priority</label>
+          <select id="task-priority" name="priority">
+            <option value="high">High impact</option>
+            <option value="medium" selected>Medium</option>
+            <option value="low">Low</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="task-color">Task Colour</label>
+          <input type="color" id="task-color" name="color" value="#6a5acd">
+        </div>
+        <div class="field">
+          <label for="task-start">Start time</label>
+          <input type="time" id="task-start" name="start" value="09:00">
+        </div>
+        <div class="field">
+          <label for="task-duration">Time allocation (hours)</label>
+          <input type="number" min="0" step="0.5" id="task-duration" name="duration" placeholder="2">
+        </div>
+        <div class="field">
+          <label for="task-notes">Notes</label>
+          <textarea id="task-notes" name="notes" placeholder="Context, deliverables or links..."></textarea>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-ghost" id="task-cancel">Cancel</button>
+          <span class="spacer"></span>
+          <button type="button" class="btn btn-ghost" id="task-delete" style="display:none;">Delete</button>
+          <button type="submit" class="btn btn-primary">Save Task</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="focus-modal">
+    <div class="modal">
+      <h2 id="focus-modal-title">New focus block</h2>
+      <form id="focus-form">
+        <div class="field">
+          <label for="focus-name">Project / Intention</label>
+          <input type="text" id="focus-name" name="name" placeholder="Filming + editing ads" required>
+        </div>
+        <div class="field">
+          <label for="focus-start">Start date</label>
+          <input type="date" id="focus-start" name="start" required>
+        </div>
+        <div class="field">
+          <label for="focus-end">Wrap date</label>
+          <input type="date" id="focus-end" name="end" required>
+        </div>
+        <div class="field">
+          <label for="focus-color">Colour</label>
+          <input type="color" id="focus-color" name="color" value="#ff6f91">
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-ghost" id="focus-cancel">Cancel</button>
+          <span class="spacer"></span>
+          <button type="button" class="btn btn-ghost" id="focus-delete" style="display:none;">Delete</button>
+          <button type="submit" class="btn btn-primary">Save Focus</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const storageKey = 'focus-flow-calendar-state-v1';
+
+    const defaultState = () => ({
+      tasks: {},
+      projects: [],
+      nextTaskId: 1,
+      nextProjectId: 1
+    });
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(storageKey);
+        if (!raw) return defaultState();
+        const parsed = JSON.parse(raw);
+        if (!parsed.tasks) parsed.tasks = {};
+        if (!parsed.projects) parsed.projects = [];
+        if (!parsed.nextTaskId) parsed.nextTaskId = 1;
+        if (!parsed.nextProjectId) parsed.nextProjectId = 1;
+        return parsed;
+      } catch (err) {
+        console.error('Failed to parse state', err);
+        return defaultState();
+      }
+    }
+
+    function saveState() {
+      localStorage.setItem(storageKey, JSON.stringify(state));
+    }
+
+    function formatDateKey(date) {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    function parseDateKey(key) {
+      const [year, month, day] = key.split('-').map(Number);
+      return new Date(year, month - 1, day);
+    }
+
+    function formatFullDate(date) {
+      return date.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
+    }
+
+    function formatTime(date) {
+      return date.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function compareTasks(a, b) {
+      const priorityRank = { high: 0, medium: 1, low: 2 };
+      const timeA = a.start || '';
+      const timeB = b.start || '';
+      if (timeA && timeB && timeA !== timeB) {
+        return timeA.localeCompare(timeB);
+      }
+      if (timeA && !timeB) return -1;
+      if (!timeA && timeB) return 1;
+      const priorityDiff = priorityRank[a.priority || 'medium'] - priorityRank[b.priority || 'medium'];
+      if (priorityDiff !== 0) return priorityDiff;
+      return a.title.localeCompare(b.title);
+    }
+
+    function hexToRgba(hex, alpha) {
+      if (!hex || typeof hex !== 'string') return `rgba(255,255,255,${alpha})`;
+      const stripped = hex.replace('#', '');
+      const bigint = parseInt(stripped.length === 3
+        ? stripped.split('').map((c) => c + c).join('')
+        : stripped, 16);
+      const r = (bigint >> 16) & 255;
+      const g = (bigint >> 8) & 255;
+      const b = bigint & 255;
+      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
+
+    const monthLabelEl = document.getElementById('month-label');
+    const calendarGridEl = document.getElementById('calendar-grid');
+    const currentDateEl = document.querySelector('.current-date');
+    const currentTimeEl = document.querySelector('.current-time');
+    const focusListEl = document.getElementById('focus-list');
+
+    const taskModalBackdrop = document.getElementById('task-modal');
+    const taskForm = document.getElementById('task-form');
+    const taskModalTitle = document.getElementById('task-modal-title');
+    const taskDeleteBtn = document.getElementById('task-delete');
+    const taskCancelBtn = document.getElementById('task-cancel');
+
+    const focusModalBackdrop = document.getElementById('focus-modal');
+    const focusForm = document.getElementById('focus-form');
+    const focusModalTitle = document.getElementById('focus-modal-title');
+    const focusDeleteBtn = document.getElementById('focus-delete');
+    const focusCancelBtn = document.getElementById('focus-cancel');
+    const focusNameInput = document.getElementById('focus-name');
+    const focusStartInput = document.getElementById('focus-start');
+    const focusEndInput = document.getElementById('focus-end');
+    const focusColorInput = document.getElementById('focus-color');
+
+    const taskTitleInput = document.getElementById('task-title');
+    const taskCategoryInput = document.getElementById('task-category');
+    const taskPriorityInput = document.getElementById('task-priority');
+    const taskColorInput = document.getElementById('task-color');
+    const taskStartInput = document.getElementById('task-start');
+    const taskDurationInput = document.getElementById('task-duration');
+    const taskNotesInput = document.getElementById('task-notes');
+
+    let state = loadState();
+    let today = new Date();
+    let viewYear = today.getFullYear();
+    let viewMonth = today.getMonth();
+
+    let editingTask = null;
+    let editingDate = null;
+    let editingFocusId = null;
+    let draggedTask = null;
+    let focusSelection = null;
+
+    function clearDragState() {
+      draggedTask = null;
+      document.querySelectorAll('.drag-over').forEach((day) => day.classList.remove('drag-over'));
+      document.querySelectorAll('.task-card.is-dragging').forEach((card) => card.classList.remove('is-dragging'));
+    }
+
+    function openTaskModal(dateKey, task) {
+      editingDate = dateKey;
+      editingTask = task ? { ...task } : null;
+      taskModalBackdrop.classList.add('open');
+      taskModalTitle.textContent = task ? 'Update task' : 'Plan a task';
+      taskDeleteBtn.style.display = task ? 'inline-flex' : 'none';
+
+      taskForm.reset();
+      taskStartInput.value = task?.start || '09:00';
+      taskPriorityInput.value = task?.priority || 'medium';
+      taskColorInput.value = task?.color || '#6a5acd';
+
+      if (task) {
+        taskTitleInput.value = task.title;
+        taskCategoryInput.value = task.category || '';
+        taskDurationInput.value = task.duration ?? '';
+        taskNotesInput.value = task.notes || '';
+      }
+
+      requestAnimationFrame(() => {
+        taskTitleInput.focus();
+        taskTitleInput.select();
+      });
+    }
+
+    function closeTaskModal() {
+      taskModalBackdrop.classList.remove('open');
+      editingTask = null;
+      editingDate = null;
+      draggedTask = null;
+    }
+
+    function openFocusModal(project, defaultRange) {
+      editingFocusId = project ? project.id : null;
+      focusModalBackdrop.classList.add('open');
+      focusModalTitle.textContent = project ? 'Update focus block' : 'New focus block';
+      focusDeleteBtn.style.display = project ? 'inline-flex' : 'none';
+
+      focusForm.reset();
+      focusColorInput.value = project?.color || '#ff6f91';
+      if (project) {
+        focusNameInput.value = project.name;
+        focusStartInput.value = project.start;
+        focusEndInput.value = project.end;
+      } else {
+        const defaultDate = formatDateKey(today);
+        const startValue = defaultRange?.start || defaultDate;
+        const endValue = defaultRange?.end || defaultDate;
+        focusStartInput.value = startValue;
+        focusEndInput.value = endValue;
+      }
+
+      requestAnimationFrame(() => {
+        focusNameInput.focus();
+        focusNameInput.select();
+      });
+    }
+
+    function closeFocusModal() {
+      focusModalBackdrop.classList.remove('open');
+      editingFocusId = null;
+    }
+
+    function ensureTasks(dateKey) {
+      if (!state.tasks[dateKey]) state.tasks[dateKey] = [];
+      return state.tasks[dateKey];
+    }
+
+    function removeEmptyTaskLists(dateKey) {
+      if (state.tasks[dateKey] && state.tasks[dateKey].length === 0) {
+        delete state.tasks[dateKey];
+      }
+    }
+
+    function startFocusSelection(dateKey) {
+      focusSelection = { anchor: dateKey, end: dateKey };
+      document.body.classList.add('focus-selecting');
+      applyFocusSelectionHighlight();
+      document.addEventListener('pointermove', handleFocusPointerMove);
+      document.addEventListener('pointerup', handleFocusPointerUp);
+      document.addEventListener('pointercancel', handleFocusPointerCancel);
+    }
+
+    function handleFocusPointerMove(event) {
+      if (!focusSelection) return;
+      const element = document.elementFromPoint(event.clientX, event.clientY);
+      const day = element?.closest?.('.day[data-date]');
+      if (day) {
+        updateFocusSelection(day.dataset.date);
+      }
+    }
+
+    function handleFocusPointerUp() {
+      if (!focusSelection) {
+        cleanupFocusSelection();
+        return;
+      }
+      const range = getFocusSelectionRange();
+      cleanupFocusSelection();
+      if (range) {
+        openFocusModal(null, range);
+      }
+    }
+
+    function handleFocusPointerCancel() {
+      cleanupFocusSelection();
+    }
+
+    function updateFocusSelection(dateKey) {
+      if (!focusSelection) return;
+      focusSelection.end = dateKey;
+      applyFocusSelectionHighlight();
+    }
+
+    function getFocusSelectionRange() {
+      if (!focusSelection) return null;
+      const { anchor, end } = focusSelection;
+      if (!anchor || !end) return null;
+      return anchor <= end ? { start: anchor, end } : { start: end, end: anchor };
+    }
+
+    function applyFocusSelectionHighlight() {
+      const range = getFocusSelectionRange();
+      document.querySelectorAll('.day[data-date]').forEach((cell) => {
+        if (!range) {
+          cell.classList.remove('selecting');
+          return;
+        }
+        const { start, end } = range;
+        const within = cell.dataset.date >= start && cell.dataset.date <= end;
+        cell.classList.toggle('selecting', within);
+      });
+    }
+
+    function cleanupFocusSelection() {
+      focusSelection = null;
+      document.body.classList.remove('focus-selecting');
+      document.querySelectorAll('.day.selecting').forEach((cell) => cell.classList.remove('selecting'));
+      document.removeEventListener('pointermove', handleFocusPointerMove);
+      document.removeEventListener('pointerup', handleFocusPointerUp);
+      document.removeEventListener('pointercancel', handleFocusPointerCancel);
+    }
+
+    function renderCalendar() {
+      clearDragState();
+      cleanupFocusSelection();
+
+      monthLabelEl.textContent = new Date(viewYear, viewMonth, 1).toLocaleDateString(undefined, {
+        month: 'long',
+        year: 'numeric'
+      });
+
+      calendarGridEl.innerHTML = '';
+      const firstDay = new Date(viewYear, viewMonth, 1);
+      const startWeekday = firstDay.getDay();
+      const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+      const totalCells = Math.ceil((startWeekday + daysInMonth) / 7) * 7;
+      const realTodayKey = formatDateKey(new Date());
+
+      for (let i = 0; i < totalCells; i++) {
+        const cell = document.createElement('div');
+        cell.className = 'day';
+
+        const dayNumber = i - startWeekday + 1;
+        if (dayNumber < 1 || dayNumber > daysInMonth) {
+          cell.classList.add('empty');
+          calendarGridEl.appendChild(cell);
+          continue;
+        }
+
+        const date = new Date(viewYear, viewMonth, dayNumber);
+        const dateKey = formatDateKey(date);
+        cell.dataset.date = dateKey;
+
+        if (realTodayKey === dateKey) {
+          cell.classList.add('today');
+        }
+
+        cell.addEventListener('pointerdown', (event) => {
+          if (event.button !== 0 || !event.shiftKey) return;
+          if (event.target.closest('.task-card') || event.target.closest('.add-task-btn') || event.target.closest('.project-tag')) {
+            return;
+          }
+          event.preventDefault();
+          startFocusSelection(dateKey);
+        });
+
+        cell.addEventListener('dragenter', (event) => {
+          event.preventDefault();
+          cell.classList.add('drag-over');
+        });
+
+          cell.addEventListener('dragover', (event) => {
+            event.preventDefault();
+            cell.classList.add('drag-over');
+            event.dataTransfer.dropEffect = 'move';
+          });
+
+          cell.addEventListener('dragleave', () => {
+            cell.classList.remove('drag-over');
+          });
+
+          cell.addEventListener('drop', () => {
+            cell.classList.remove('drag-over');
+            if (!draggedTask) {
+              clearDragState();
+              return;
+            }
+            moveTaskToDate(draggedTask, dateKey);
+            clearDragState();
+          });
+
+        const header = document.createElement('div');
+        header.className = 'day-header';
+        const numberEl = document.createElement('div');
+        numberEl.className = 'day-number';
+        numberEl.textContent = dayNumber;
+        header.appendChild(numberEl);
+
+        const addBtn = document.createElement('button');
+        addBtn.className = 'add-task-btn';
+        addBtn.type = 'button';
+        addBtn.textContent = '+';
+        addBtn.title = 'Add task';
+        addBtn.addEventListener('click', () => openTaskModal(dateKey));
+        header.appendChild(addBtn);
+
+        cell.appendChild(header);
+
+        const overlayStack = document.createElement('div');
+        overlayStack.className = 'focus-overlay-stack';
+        const tagsWrap = document.createElement('div');
+        tagsWrap.className = 'project-tags';
+
+        const activeProjects = state.projects.filter((project) => project.start <= dateKey && project.end >= dateKey);
+        activeProjects.forEach((project) => {
+          const overlay = document.createElement('div');
+          overlay.className = 'focus-overlay';
+          overlay.style.background = hexToRgba(project.color, 0.18);
+          overlayStack.appendChild(overlay);
+
+          const tag = document.createElement('span');
+          tag.className = 'project-tag';
+          const dot = document.createElement('span');
+          dot.style.background = project.color;
+          tag.appendChild(dot);
+          tag.append(project.name);
+          tagsWrap.appendChild(tag);
+        });
+
+        cell.appendChild(overlayStack);
+        if (activeProjects.length > 0) {
+          cell.appendChild(tagsWrap);
+        }
+
+        const taskList = document.createElement('div');
+        taskList.className = 'task-list';
+          const tasks = (state.tasks[dateKey] || []).slice().sort(compareTasks);
+          tasks.forEach((task) => {
+            const taskCard = document.createElement('div');
+            taskCard.className = 'task-card';
+            taskCard.draggable = true;
+            taskCard.dataset.taskId = task.id;
+            const taskColor = task.color || '#6a5acd';
+
+            taskCard.addEventListener('dragstart', (event) => {
+              draggedTask = { id: task.id, fromDate: dateKey };
+              event.dataTransfer.effectAllowed = 'move';
+              event.dataTransfer.setData('text/plain', String(task.id));
+              taskCard.classList.add('is-dragging');
+            });
+
+            taskCard.addEventListener('dragend', () => {
+              clearDragState();
+            });
+
+            taskCard.addEventListener('dblclick', () => {
+              openTaskModal(dateKey, task);
+            });
+
+            const title = document.createElement('div');
+            title.className = 'task-title';
+
+            const colorDot = document.createElement('span');
+            colorDot.className = 'task-dot';
+            colorDot.style.background = taskColor;
+            title.appendChild(colorDot);
+
+            const name = document.createElement('span');
+            name.className = 'task-name';
+            name.textContent = task.title;
+            title.appendChild(name);
+
+            let timeRange = '';
+            if (task.start) {
+              const endTime = task.duration ? computeEndTime(task.start, task.duration) : null;
+              timeRange = endTime ? `${task.start} - ${endTime}` : task.start;
+            }
+
+            if (timeRange) {
+              const timeEl = document.createElement('span');
+              timeEl.className = 'task-time';
+              timeEl.textContent = timeRange;
+              title.appendChild(timeEl);
+            }
+
+            taskCard.appendChild(title);
+
+            const meta = document.createElement('div');
+            meta.className = 'task-meta';
+
+            if (timeRange) {
+              const timeChip = document.createElement('span');
+              timeChip.className = 'task-chip';
+              timeChip.textContent = timeRange;
+              meta.appendChild(timeChip);
+            }
+
+          if (task.category) {
+            const categoryChip = document.createElement('span');
+            categoryChip.className = 'task-chip';
+            categoryChip.textContent = task.category;
+            meta.appendChild(categoryChip);
+          }
+
+          if (task.priority) {
+            const priorityChip = document.createElement('span');
+            priorityChip.className = 'task-chip';
+            if (task.priority === 'high') priorityChip.classList.add('priority-high');
+            if (task.priority === 'medium') priorityChip.classList.add('priority-medium');
+            if (task.priority === 'low') priorityChip.classList.add('priority-low');
+            priorityChip.textContent = `${task.priority.charAt(0).toUpperCase()}${task.priority.slice(1)} priority`;
+            meta.appendChild(priorityChip);
+          }
+
+          if (task.notes) {
+            const notesChip = document.createElement('span');
+            notesChip.className = 'task-chip';
+            notesChip.textContent = 'Notes';
+            notesChip.title = task.notes;
+            meta.appendChild(notesChip);
+          }
+
+          if (meta.children.length) {
+            taskCard.appendChild(meta);
+          }
+
+          taskList.appendChild(taskCard);
+        });
+
+        if (!tasks.length) {
+          const empty = document.createElement('div');
+          empty.className = 'empty-state';
+          empty.textContent = 'Drop tasks here';
+          taskList.appendChild(empty);
+        }
+
+        cell.appendChild(taskList);
+
+        if (realTodayKey === dateKey) {
+          const progress = document.createElement('div');
+          progress.className = 'day-progress';
+          cell.appendChild(progress);
+        }
+
+        calendarGridEl.appendChild(cell);
+      }
+
+      renderFocusList();
+      updateCurrentTime();
+    }
+
+    function computeEndTime(start, duration) {
+      const [hours, minutes] = start.split(':').map(Number);
+      const totalMinutes = hours * 60 + minutes + Math.round(Number(duration || 0) * 60);
+      const endHours = Math.floor(totalMinutes / 60) % 24;
+      const endMinutes = totalMinutes % 60;
+      return `${String(endHours).padStart(2, '0')}:${String(endMinutes).padStart(2, '0')}`;
+    }
+
+    function moveTaskToDate(taskInfo, newDateKey) {
+      const fromTasks = state.tasks[taskInfo.fromDate] || [];
+      const taskIndex = fromTasks.findIndex((t) => t.id === taskInfo.id);
+      if (taskIndex === -1) return;
+
+      const [task] = fromTasks.splice(taskIndex, 1);
+      if (!state.tasks[newDateKey]) state.tasks[newDateKey] = [];
+      state.tasks[newDateKey].push(task);
+
+      if (fromTasks.length === 0) {
+        delete state.tasks[taskInfo.fromDate];
+      }
+
+      state.tasks[newDateKey].sort(compareTasks);
+      saveState();
+      renderCalendar();
+    }
+
+    function renderFocusList() {
+      focusListEl.innerHTML = '';
+      if (!state.projects.length) {
+        const empty = document.createElement('div');
+        empty.className = 'empty-state';
+        empty.textContent = 'No focus blocks yet. Use them to colour a stretch of days for a project.';
+        focusListEl.appendChild(empty);
+        return;
+      }
+
+      const sorted = state.projects.slice().sort((a, b) => a.start.localeCompare(b.start));
+      sorted.forEach((project) => {
+        const card = document.createElement('div');
+        card.className = 'focus-card';
+        card.style.setProperty('--focus-color', hexToRgba(project.color, 0.45));
+
+        const title = document.createElement('strong');
+        title.textContent = project.name;
+        card.appendChild(title);
+
+        const range = document.createElement('div');
+        range.className = 'range';
+        const startDate = parseDateKey(project.start).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+        const endDate = parseDateKey(project.end).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+        range.textContent = `${startDate} → ${endDate}`;
+        card.appendChild(range);
+
+        const editButton = document.createElement('button');
+        editButton.className = 'btn btn-ghost';
+        editButton.type = 'button';
+        editButton.textContent = 'Edit';
+        editButton.addEventListener('click', () => openFocusModal(project));
+        card.appendChild(editButton);
+
+        focusListEl.appendChild(card);
+      });
+    }
+
+    document.getElementById('prev-month').addEventListener('click', () => {
+      if (viewMonth === 0) {
+        viewMonth = 11;
+        viewYear -= 1;
+      } else {
+        viewMonth -= 1;
+      }
+      renderCalendar();
+    });
+
+    document.getElementById('next-month').addEventListener('click', () => {
+      if (viewMonth === 11) {
+        viewMonth = 0;
+        viewYear += 1;
+      } else {
+        viewMonth += 1;
+      }
+      renderCalendar();
+    });
+
+    document.getElementById('reset-calendar').addEventListener('click', () => {
+      today = new Date();
+      viewYear = today.getFullYear();
+      viewMonth = today.getMonth();
+      renderCalendar();
+    });
+
+    document.getElementById('add-focus').addEventListener('click', () => {
+      openFocusModal(null);
+    });
+
+    taskCancelBtn.addEventListener('click', closeTaskModal);
+    focusCancelBtn.addEventListener('click', closeFocusModal);
+
+    taskModalBackdrop.addEventListener('click', (event) => {
+      if (event.target === taskModalBackdrop) {
+        closeTaskModal();
+      }
+    });
+
+    focusModalBackdrop.addEventListener('click', (event) => {
+      if (event.target === focusModalBackdrop) {
+        closeFocusModal();
+      }
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Shift') {
+        document.body.classList.add('shift-mode');
+      }
+      if (event.key === 'Escape' && focusSelection) {
+        cleanupFocusSelection();
+      }
+    });
+
+    document.addEventListener('keyup', (event) => {
+      if (event.key === 'Shift') {
+        document.body.classList.remove('shift-mode');
+      }
+    });
+
+    window.addEventListener('blur', () => {
+      document.body.classList.remove('shift-mode');
+      if (focusSelection) {
+        cleanupFocusSelection();
+      }
+    });
+
+    taskForm.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const formData = new FormData(taskForm);
+      const title = formData.get('title').trim();
+      if (!title) return;
+
+      const payload = {
+        title,
+        category: formData.get('category').trim(),
+        priority: formData.get('priority'),
+        color: formData.get('color'),
+        start: formData.get('start'),
+        duration: formData.get('duration'),
+        notes: formData.get('notes').trim()
+      };
+
+      if (payload.duration === '') delete payload.duration;
+      if (!payload.category) delete payload.category;
+      if (!payload.notes) delete payload.notes;
+      if (!payload.start) delete payload.start;
+
+      if (editingTask) {
+        const tasks = ensureTasks(editingDate);
+        const index = tasks.findIndex((task) => task.id === editingTask.id);
+        if (index !== -1) {
+          tasks[index] = { ...tasks[index], ...payload };
+        }
+      } else {
+        const taskId = state.nextTaskId++;
+        ensureTasks(editingDate).push({ id: taskId, ...payload });
+      }
+
+      ensureTasks(editingDate).sort(compareTasks);
+      saveState();
+      closeTaskModal();
+      renderCalendar();
+    });
+
+    taskDeleteBtn.addEventListener('click', () => {
+      if (!editingTask) return;
+      const tasks = ensureTasks(editingDate);
+      const index = tasks.findIndex((task) => task.id === editingTask.id);
+      if (index !== -1) {
+        tasks.splice(index, 1);
+      }
+      removeEmptyTaskLists(editingDate);
+      saveState();
+      closeTaskModal();
+      renderCalendar();
+    });
+
+    focusForm.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const formData = new FormData(focusForm);
+      const name = formData.get('name').trim();
+      const start = formData.get('start');
+      const end = formData.get('end');
+      if (!name || !start || !end) return;
+
+      if (end < start) {
+        alert('The wrap date must be on or after the start date.');
+        return;
+      }
+
+      const color = formData.get('color');
+
+      if (editingFocusId != null) {
+        const index = state.projects.findIndex((project) => project.id === editingFocusId);
+        if (index !== -1) {
+          state.projects[index] = { ...state.projects[index], name, start, end, color };
+        }
+      } else {
+        const project = {
+          id: state.nextProjectId++,
+          name,
+          start,
+          end,
+          color
+        };
+        state.projects.push(project);
+      }
+
+      saveState();
+      closeFocusModal();
+      renderCalendar();
+    });
+
+    focusDeleteBtn.addEventListener('click', () => {
+      if (editingFocusId == null) return;
+      const index = state.projects.findIndex((project) => project.id === editingFocusId);
+      if (index !== -1) {
+        state.projects.splice(index, 1);
+      }
+      saveState();
+      closeFocusModal();
+      renderCalendar();
+    });
+
+    function updateCurrentTime() {
+      const now = new Date();
+      currentDateEl.textContent = formatFullDate(now);
+      currentTimeEl.textContent = formatTime(now);
+
+      const todayKey = formatDateKey(now);
+      const todayCell = calendarGridEl.querySelector(`.day[data-date="${todayKey}"]`);
+      if (todayCell) {
+        todayCell.classList.add('today');
+        const progress = todayCell.querySelector('.day-progress');
+        if (progress) {
+          const minutes = now.getHours() * 60 + now.getMinutes();
+          const percentage = Math.min(100, Math.max(0, (minutes / (24 * 60)) * 100));
+          progress.style.width = `${percentage}%`;
+        }
+      }
+    }
+
+    setInterval(updateCurrentTime, 60 * 1000);
+
+    renderCalendar();
+  </script>
+</body>
+</html>
