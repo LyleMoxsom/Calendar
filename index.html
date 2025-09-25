@@ -186,6 +186,8 @@
       padding: 20px;
       box-shadow: var(--shadow);
       backdrop-filter: blur(18px);
+      position: relative;
+      overflow: visible;
     }
 
     .weekday-row {
@@ -203,10 +205,18 @@
       display: grid;
       grid-template-columns: repeat(7, minmax(0, 1fr));
       gap: 10px;
+      overflow: visible;
     }
 
     .day {
       position: relative;
+      min-height: 130px;
+      overflow: visible;
+    }
+
+    .day-inner {
+      position: absolute;
+      inset: 0;
       background: rgba(11, 11, 15, 0.6);
       border-radius: var(--radius-md);
       border: 1px solid rgba(255, 255, 255, 0.05);
@@ -214,12 +224,57 @@
       display: flex;
       flex-direction: column;
       gap: 10px;
+      transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+                  box-shadow 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+                  border 0.2s ease,
+                  background 0.2s ease;
+      overflow: hidden;
+      transform-origin: top center;
+      will-change: transform;
+      z-index: 1;
+    }
+
+    .day-inner::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      box-shadow: 0 0 0 0 rgba(106, 90, 205, 0.4);
+      opacity: 0;
+      transition: opacity 0.35s ease, box-shadow 0.35s ease;
+      pointer-events: none;
+    }
+
+    .day:hover .day-inner,
+    .day.drag-over .day-inner {
+      transform: scale(1.05);
+      border-color: rgba(255, 255, 255, 0.18);
+      background: rgba(21, 21, 31, 0.82);
+      z-index: 5;
+      box-shadow: 0 24px 52px rgba(0, 0, 0, 0.4);
+    }
+
+    .day:hover .day-inner::after,
+    .day.drag-over .day-inner::after {
+      opacity: 1;
+      box-shadow: 0 0 0 8px rgba(106, 90, 205, 0.18);
+    }
+
+    .day.has-tasks:hover .day-inner {
+      transform: scale(1.18) translateY(-18px);
+      box-shadow: 0 32px 68px rgba(0, 0, 0, 0.55);
+      z-index: 12;
+    }
+
+    .day.focus-range .day-inner {
+      border-color: rgba(106, 90, 205, 0.6);
+      box-shadow: 0 0 0 2px rgba(106, 90, 205, 0.3);
     }
 
     .day.empty {
       background: rgba(255, 255, 255, 0.02);
-      border-style: dashed;
-      border-color: rgba(255, 255, 255, 0.05);
+      border-radius: var(--radius-md);
+      border: 1px dashed rgba(255, 255, 255, 0.05);
     }
 
     .day-header {
@@ -270,10 +325,52 @@
       gap: 8px;
       flex: 1;
       min-height: 24px;
+      max-height: 110px;
+      overflow: hidden;
+      transition: max-height 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
+    }
+
+    .day.has-tasks:not(:hover) .task-list {
+      gap: 4px;
+    }
+
+    .day:hover .task-list,
+    .day.drag-over .task-list {
+      max-height: clamp(240px, 52vh, 520px);
+      overflow: auto;
+      padding-right: 4px;
+    }
+
+    .day:hover .task-list::-webkit-scrollbar,
+    .day.drag-over .task-list::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .day:hover .task-list::-webkit-scrollbar-thumb,
+    .day.drag-over .task-list::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.18);
+      border-radius: 999px;
     }
 
     .task-card {
       position: relative;
+      background: var(--task-color-bg, rgba(255, 255, 255, 0.07));
+      border-radius: var(--radius-sm);
+      padding: 8px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      cursor: grab;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.2s ease, height 0.25s ease;
+      min-height: 34px;
+      overflow: hidden;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+    }
+
+    .task-card:hover {
+      background: var(--task-color-hover, rgba(255, 255, 255, 0.1));
     }
 
     .task-card:active {
@@ -282,15 +379,77 @@
       box-shadow: 0 12px 24px rgba(0, 0, 0, 0.35);
     }
 
+    .task-card.is-dragging {
+      opacity: 0.6;
+      transform: scale(0.97);
+      box-shadow: 0 18px 32px rgba(0, 0, 0, 0.45);
+    }
+
+    .day.has-tasks:not(:hover) .task-card {
+      padding: 0;
+      min-height: 6px;
+      height: 8px;
+      background: var(--task-color-band, rgba(255, 255, 255, 0.22));
+      box-shadow: none;
+      cursor: pointer;
+    }
+
+    .day.has-tasks:not(:hover) .task-card .task-title,
+    .day.has-tasks:not(:hover) .task-card .task-meta {
+      display: none;
+    }
+
+    .day.has-tasks:not(:hover) .task-card:hover {
+      background: var(--task-color-band, rgba(255, 255, 255, 0.22));
+    }
+
+    .day.has-tasks:hover .task-card {
+      height: auto;
+      min-height: 34px;
+      cursor: grab;
+    }
+
     .task-title {
       font-weight: 600;
       font-size: 14px;
       display: flex;
       align-items: center;
+      gap: 10px;
+    }
+
+    .task-title .task-name {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .task-time {
+      font-size: 12px;
+      color: var(--muted);
+      margin-left: auto;
+    }
+
+    .task-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      background: var(--task-color, #6a5acd);
+      box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.08);
+    }
+
+    .task-meta {
+      display: none;
       flex-wrap: wrap;
       gap: 6px;
       font-size: 12px;
       color: var(--muted);
+    }
+
+    .day:hover .task-meta,
+    .day.drag-over .task-meta {
+      display: flex;
     }
 
     .task-chip {
@@ -315,7 +474,7 @@
       color: #4bc0c0;
     }
 
-    .day.today {
+    .day.today .day-inner {
       border-color: var(--accent);
       box-shadow: 0 0 0 1px rgba(106, 90, 205, 0.3);
     }
@@ -342,9 +501,15 @@
     }
 
     .project-tags {
+      display: none;
       flex-wrap: wrap;
       gap: 6px;
       font-size: 11px;
+    }
+
+    .day:hover .project-tags,
+    .day.drag-over .project-tags {
+      display: flex;
     }
 
     .project-tag {
@@ -367,6 +532,7 @@
     .day-progress {
       position: absolute;
       left: 0;
+      right: 0;
       bottom: 0;
       height: 4px;
       background: linear-gradient(90deg, var(--accent), rgba(255, 105, 180, 0.9));
@@ -374,6 +540,7 @@
       pointer-events: none;
     }
 
+    .focus-panel {
       background: rgba(255, 255, 255, 0.04);
       border-radius: var(--radius-lg);
       border: 1px solid rgba(255, 255, 255, 0.08);
@@ -384,6 +551,8 @@
       backdrop-filter: blur(18px);
     }
 
+    .focus-panel h3 {
+      margin: 0;
       font-size: 16px;
       letter-spacing: 0.12em;
       text-transform: uppercase;
@@ -539,6 +708,23 @@
       </div>
     </section>
 
+    <section class="calendar-card">
+      <div class="weekday-row">
+        <span>Sun</span>
+        <span>Mon</span>
+        <span>Tue</span>
+        <span>Wed</span>
+        <span>Thu</span>
+        <span>Fri</span>
+        <span>Sat</span>
+      </div>
+      <div class="calendar-grid" id="calendar-grid"></div>
+    </section>
+
+    <section class="focus-panel">
+      <h3>Focus Blocks</h3>
+      <div class="focus-list" id="focus-list"></div>
+    </section>
   </div>
 
   <div class="modal-backdrop" id="task-modal">
@@ -720,6 +906,82 @@
     let editingDate = null;
     let editingFocusId = null;
     let draggedTask = null;
+    const focusSelection = {
+      active: false,
+      anchor: null,
+      latest: null
+    };
+
+    function clearDragState() {
+      draggedTask = null;
+      document.querySelectorAll('.drag-over').forEach((day) => day.classList.remove('drag-over'));
+      document.querySelectorAll('.task-card.is-dragging').forEach((card) => card.classList.remove('is-dragging'));
+    }
+
+    function clearFocusSelectionHighlight() {
+      calendarGridEl.querySelectorAll('.day.focus-range').forEach((day) => day.classList.remove('focus-range'));
+    }
+
+    function updateFocusSelectionHighlight() {
+      if (!focusSelection.anchor || !focusSelection.latest) return;
+      const [startKey, endKey] = focusSelection.anchor <= focusSelection.latest
+        ? [focusSelection.anchor, focusSelection.latest]
+        : [focusSelection.latest, focusSelection.anchor];
+
+      calendarGridEl.querySelectorAll('.day').forEach((dayEl) => {
+        const cellDate = dayEl.dataset.date;
+        if (!cellDate) {
+          dayEl.classList.remove('focus-range');
+          return;
+        }
+        if (cellDate >= startKey && cellDate <= endKey) {
+          dayEl.classList.add('focus-range');
+        } else {
+          dayEl.classList.remove('focus-range');
+        }
+      });
+    }
+
+    function finishFocusSelection(openModal) {
+      if (!focusSelection.active) return;
+      document.removeEventListener('mouseup', handleFocusSelectionMouseUp);
+      const anchor = focusSelection.anchor;
+      const latest = focusSelection.latest;
+      focusSelection.active = false;
+      focusSelection.anchor = null;
+      focusSelection.latest = null;
+
+      if (!anchor || !latest) {
+        clearFocusSelectionHighlight();
+        return;
+      }
+
+      const [startKey, endKey] = anchor <= latest ? [anchor, latest] : [latest, anchor];
+      clearFocusSelectionHighlight();
+      if (openModal) {
+        openFocusModal(null, { start: startKey, end: endKey });
+      }
+    }
+
+    function handleFocusSelectionMouseUp(event) {
+      if (!focusSelection.active) return;
+      event.preventDefault();
+      finishFocusSelection(true);
+    }
+
+    function beginFocusSelection(dateKey) {
+      focusSelection.active = true;
+      focusSelection.anchor = dateKey;
+      focusSelection.latest = dateKey;
+      updateFocusSelectionHighlight();
+      document.addEventListener('mouseup', handleFocusSelectionMouseUp);
+    }
+
+    function updateFocusSelection(dateKey) {
+      if (!focusSelection.active) return;
+      focusSelection.latest = dateKey;
+      updateFocusSelectionHighlight();
+    }
 
     function openTaskModal(dateKey, task) {
       editingDate = dateKey;
@@ -748,7 +1010,7 @@
       draggedTask = null;
     }
 
-    function openFocusModal(project) {
+    function openFocusModal(project, range = null) {
       editingFocusId = project ? project.id : null;
       focusModalBackdrop.classList.add('open');
       focusModalTitle.textContent = project ? 'Update focus block' : 'New focus block';
@@ -760,6 +1022,10 @@
         document.getElementById('focus-name').value = project.name;
         document.getElementById('focus-start').value = project.start;
         document.getElementById('focus-end').value = project.end;
+      } else if (range) {
+        document.getElementById('focus-name').value = '';
+        document.getElementById('focus-start').value = range.start;
+        document.getElementById('focus-end').value = range.end;
       } else {
         const defaultDate = formatDateKey(today);
         document.getElementById('focus-start').value = defaultDate;
@@ -784,6 +1050,10 @@
     }
 
     function renderCalendar() {
+      finishFocusSelection(false);
+      clearDragState();
+      clearFocusSelectionHighlight();
+
       monthLabelEl.textContent = new Date(viewYear, viewMonth, 1).toLocaleDateString(undefined, {
         month: 'long',
         year: 'numeric'
@@ -815,6 +1085,52 @@
           cell.classList.add('today');
         }
 
+        const cellInner = document.createElement('div');
+        cellInner.className = 'day-inner';
+        cell.appendChild(cellInner);
+
+        cell.addEventListener('dragenter', (event) => {
+          event.preventDefault();
+          cell.classList.add('drag-over');
+        });
+
+        cell.addEventListener('dragover', (event) => {
+          event.preventDefault();
+          cell.classList.add('drag-over');
+          event.dataTransfer.dropEffect = 'move';
+        });
+
+        cell.addEventListener('dragleave', () => {
+          cell.classList.remove('drag-over');
+        });
+
+        cell.addEventListener('drop', () => {
+          cell.classList.remove('drag-over');
+          if (!draggedTask) {
+            clearDragState();
+            return;
+          }
+          moveTaskToDate(draggedTask, dateKey);
+          clearDragState();
+        });
+
+        cell.addEventListener('mousedown', (event) => {
+          if (event.button !== 0 || !event.shiftKey) return;
+          if (event.target.closest('button')) return;
+          event.preventDefault();
+          beginFocusSelection(dateKey);
+        });
+
+        cell.addEventListener('mouseenter', (event) => {
+          if (!focusSelection.active || (event.buttons & 1) === 0) return;
+          updateFocusSelection(dateKey);
+        });
+
+        cell.addEventListener('mousemove', (event) => {
+          if (!focusSelection.active || (event.buttons & 1) === 0) return;
+          updateFocusSelection(dateKey);
+        });
+
         const header = document.createElement('div');
         header.className = 'day-header';
         const numberEl = document.createElement('div');
@@ -830,7 +1146,7 @@
         addBtn.addEventListener('click', () => openTaskModal(dateKey));
         header.appendChild(addBtn);
 
-        cell.appendChild(header);
+        cellInner.appendChild(header);
 
         const overlayStack = document.createElement('div');
         overlayStack.className = 'focus-overlay-stack';
@@ -853,13 +1169,84 @@
           tagsWrap.appendChild(tag);
         });
 
-        cell.appendChild(overlayStack);
+        cellInner.appendChild(overlayStack);
         if (activeProjects.length > 0) {
-          cell.appendChild(tagsWrap);
+          cellInner.appendChild(tagsWrap);
         }
 
         const taskList = document.createElement('div');
         taskList.className = 'task-list';
+        const tasks = (state.tasks[dateKey] || []).slice().sort(compareTasks);
+        tasks.forEach((task) => {
+          const taskCard = document.createElement('div');
+          taskCard.className = 'task-card';
+          taskCard.draggable = true;
+          taskCard.dataset.taskId = task.id;
+          const taskColor = task.color || '#6a5acd';
+          const taskBand = hexToRgba(taskColor, 0.7);
+          const taskBg = hexToRgba(taskColor, 0.18);
+          const taskHover = hexToRgba(taskColor, 0.28);
+          taskCard.style.setProperty('--task-color', taskColor);
+          taskCard.style.setProperty('--task-color-band', taskBand);
+          taskCard.style.setProperty('--task-color-bg', taskBg);
+          taskCard.style.setProperty('--task-color-hover', taskHover);
+
+          taskCard.addEventListener('dragstart', (event) => {
+            if (event.shiftKey) {
+              event.preventDefault();
+              draggedTask = null;
+              return;
+            }
+            draggedTask = { id: task.id, fromDate: dateKey };
+            event.dataTransfer.effectAllowed = 'move';
+            event.dataTransfer.setData('text/plain', String(task.id));
+            taskCard.classList.add('is-dragging');
+          });
+
+          taskCard.addEventListener('dragend', () => {
+            clearDragState();
+          });
+
+          taskCard.addEventListener('dblclick', () => {
+            openTaskModal(dateKey, task);
+          });
+
+          const title = document.createElement('div');
+          title.className = 'task-title';
+
+          const colorDot = document.createElement('span');
+          colorDot.className = 'task-dot';
+          title.appendChild(colorDot);
+
+          const name = document.createElement('span');
+          name.className = 'task-name';
+          name.textContent = task.title;
+          title.appendChild(name);
+
+          let timeRange = '';
+          if (task.start) {
+            const endTime = task.duration ? computeEndTime(task.start, task.duration) : null;
+            timeRange = endTime ? `${task.start} - ${endTime}` : task.start;
+          }
+
+          if (timeRange) {
+            const timeEl = document.createElement('span');
+            timeEl.className = 'task-time';
+            timeEl.textContent = timeRange;
+            title.appendChild(timeEl);
+          }
+
+          taskCard.appendChild(title);
+
+          const meta = document.createElement('div');
+          meta.className = 'task-meta';
+
+          if (timeRange) {
+            const timeChip = document.createElement('span');
+            timeChip.className = 'task-chip';
+            timeChip.textContent = timeRange;
+            meta.appendChild(timeChip);
+          }
 
           if (task.category) {
             const categoryChip = document.createElement('span');
@@ -890,8 +1277,15 @@
             taskCard.appendChild(meta);
           }
 
+          const tooltipParts = [task.title];
+          if (timeRange) tooltipParts.push(timeRange);
+          if (task.category) tooltipParts.push(task.category);
+          taskCard.title = tooltipParts.join(' • ');
+
           taskList.appendChild(taskCard);
         });
+
+        cell.classList.toggle('has-tasks', tasks.length > 0);
 
         if (!tasks.length) {
           const empty = document.createElement('div');
@@ -900,12 +1294,12 @@
           taskList.appendChild(empty);
         }
 
-        cell.appendChild(taskList);
+        cellInner.appendChild(taskList);
 
         if (realTodayKey === dateKey) {
           const progress = document.createElement('div');
           progress.className = 'day-progress';
-          cell.appendChild(progress);
+          cellInner.appendChild(progress);
         }
 
         calendarGridEl.appendChild(cell);
@@ -1008,6 +1402,13 @@
 
     document.getElementById('add-focus').addEventListener('click', () => {
       openFocusModal(null);
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && focusSelection.active) {
+        event.preventDefault();
+        finishFocusSelection(false);
+      }
     });
 
     taskCancelBtn.addEventListener('click', closeTaskModal);
@@ -1145,5 +1546,6 @@
 
     renderCalendar();
   </script>
+  <!-- test commit -->
 </body>
 </html>
