@@ -179,19 +179,6 @@
       background: rgba(255, 255, 255, 0.08);
     }
 
-    .layout {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(280px, 320px);
-      gap: 24px;
-      align-items: start;
-    }
-
-    @media (max-width: 1024px) {
-      .layout {
-        grid-template-columns: 1fr;
-      }
-    }
-
     .calendar-card {
       background: rgba(255, 255, 255, 0.04);
       border-radius: var(--radius-lg);
@@ -223,19 +210,10 @@
       background: rgba(11, 11, 15, 0.6);
       border-radius: var(--radius-md);
       border: 1px solid rgba(255, 255, 255, 0.05);
-      min-height: 140px;
       padding: 12px;
       display: flex;
       flex-direction: column;
       gap: 10px;
-      transition: transform 0.2s ease, border 0.2s ease, background 0.2s ease;
-      overflow: hidden;
-    }
-
-    .day:hover {
-      transform: translateY(-2px);
-      border-color: rgba(255, 255, 255, 0.12);
-      background: rgba(21, 21, 31, 0.7);
     }
 
     .day.empty {
@@ -296,14 +274,6 @@
 
     .task-card {
       position: relative;
-      background: rgba(255, 255, 255, 0.06);
-      border-radius: var(--radius-sm);
-      padding: 10px 12px 10px 14px;
-      display: grid;
-      gap: 6px;
-      cursor: grab;
-      border-left: 4px solid transparent;
-      transition: transform 0.15s ease, box-shadow 0.15s ease;
     }
 
     .task-card:active {
@@ -317,11 +287,6 @@
       font-size: 14px;
       display: flex;
       align-items: center;
-      gap: 8px;
-    }
-
-    .task-meta {
-      display: flex;
       flex-wrap: wrap;
       gap: 6px;
       font-size: 12px;
@@ -359,11 +324,6 @@
       color: var(--accent);
     }
 
-    .day.drag-over {
-      border-color: rgba(255, 255, 255, 0.25);
-      background: rgba(106, 90, 205, 0.18);
-    }
-
     .focus-overlay-stack {
       position: absolute;
       inset: 0;
@@ -382,7 +342,6 @@
     }
 
     .project-tags {
-      display: flex;
       flex-wrap: wrap;
       gap: 6px;
       font-size: 11px;
@@ -415,7 +374,6 @@
       pointer-events: none;
     }
 
-    .sidebar {
       background: rgba(255, 255, 255, 0.04);
       border-radius: var(--radius-lg);
       border: 1px solid rgba(255, 255, 255, 0.08);
@@ -426,8 +384,6 @@
       backdrop-filter: blur(18px);
     }
 
-    .sidebar h3 {
-      margin: 0 0 12px;
       font-size: 16px;
       letter-spacing: 0.12em;
       text-transform: uppercase;
@@ -474,25 +430,6 @@
     .focus-card button {
       justify-self: flex-start;
       z-index: 1;
-    }
-
-    .legend {
-      display: grid;
-      gap: 10px;
-      font-size: 13px;
-      color: var(--muted);
-    }
-
-    .legend-row {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-    }
-
-    .legend-color {
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
     }
 
     .modal-backdrop {
@@ -602,35 +539,6 @@
       </div>
     </section>
 
-    <div class="layout">
-      <section class="calendar-card">
-        <div class="weekday-row">
-          <span>Sun</span>
-          <span>Mon</span>
-          <span>Tue</span>
-          <span>Wed</span>
-          <span>Thu</span>
-          <span>Fri</span>
-          <span>Sat</span>
-        </div>
-        <div class="calendar-grid" id="calendar-grid"></div>
-      </section>
-
-      <aside class="sidebar">
-        <section>
-          <h3>Focus Blocks</h3>
-          <div class="focus-list" id="focus-list"></div>
-        </section>
-        <section>
-          <h3>Priority Legend</h3>
-          <div class="legend">
-            <div class="legend-row"><span class="legend-color" style="background: rgba(255, 99, 132, 0.6);"></span> High priority</div>
-            <div class="legend-row"><span class="legend-color" style="background: rgba(255, 206, 86, 0.7);"></span> Medium priority</div>
-            <div class="legend-row"><span class="legend-color" style="background: rgba(75, 192, 192, 0.7);"></span> Low priority</div>
-          </div>
-        </section>
-      </aside>
-    </div>
   </div>
 
   <div class="modal-backdrop" id="task-modal">
@@ -907,23 +815,6 @@
           cell.classList.add('today');
         }
 
-        cell.addEventListener('dragover', (event) => {
-          event.preventDefault();
-          cell.classList.add('drag-over');
-          event.dataTransfer.dropEffect = 'move';
-        });
-
-        cell.addEventListener('dragleave', () => {
-          cell.classList.remove('drag-over');
-        });
-
-        cell.addEventListener('drop', () => {
-          cell.classList.remove('drag-over');
-          if (!draggedTask) return;
-          moveTaskToDate(draggedTask, dateKey);
-          draggedTask = null;
-        });
-
         const header = document.createElement('div');
         header.className = 'day-header';
         const numberEl = document.createElement('div');
@@ -969,39 +860,6 @@
 
         const taskList = document.createElement('div');
         taskList.className = 'task-list';
-        const tasks = (state.tasks[dateKey] || []).slice().sort(compareTasks);
-        tasks.forEach((task) => {
-          const taskCard = document.createElement('div');
-          taskCard.className = 'task-card';
-          taskCard.draggable = true;
-          taskCard.dataset.taskId = task.id;
-          taskCard.style.borderLeftColor = task.color || '#6a5acd';
-
-          taskCard.addEventListener('dragstart', (event) => {
-            draggedTask = { id: task.id, fromDate: dateKey };
-            event.dataTransfer.effectAllowed = 'move';
-            event.dataTransfer.setData('text/plain', String(task.id));
-          });
-
-          taskCard.addEventListener('dblclick', () => {
-            openTaskModal(dateKey, task);
-          });
-
-          const title = document.createElement('div');
-          title.className = 'task-title';
-          title.textContent = task.title;
-          taskCard.appendChild(title);
-
-          const meta = document.createElement('div');
-          meta.className = 'task-meta';
-
-          if (task.start) {
-            const timeChip = document.createElement('span');
-            timeChip.className = 'task-chip';
-            const endTime = task.duration ? computeEndTime(task.start, task.duration) : null;
-            timeChip.textContent = endTime ? `${task.start} - ${endTime}` : task.start;
-            meta.appendChild(timeChip);
-          }
 
           if (task.category) {
             const categoryChip = document.createElement('span');
