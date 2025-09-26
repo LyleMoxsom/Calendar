@@ -222,7 +222,7 @@
                   box-shadow 0.35s cubic-bezier(0.22, 1, 0.36, 1),
                   border 0.2s ease,
                   background 0.2s ease;
-      overflow: hidden;
+      overflow: visible;
       transform-origin: center;
       will-change: transform;
       z-index: 1;
@@ -306,26 +306,102 @@
       gap: 8px;
       flex: 1;
       min-height: 24px;
-      max-height: 88px;
-      overflow: hidden;
-      transition: max-height 0.35s cubic-bezier(0.22, 1, 0.36, 1);
       scrollbar-width: thin;
       scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
     }
 
-    .day:is(:hover, .drag-over) .task-list {
+    .task-list::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .task-list::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.18);
+      border-radius: 999px;
+    }
+
+    .task-preview {
+      display: grid;
+      gap: 4px;
+      min-height: 32px;
+      pointer-events: none;
+    }
+
+    .task-preview-bar {
+      height: 6px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.14);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .task-preview-bar::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      opacity: 0.9;
+      background: inherit;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.28);
+    }
+
+    .task-preview-empty {
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.35);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .task-flyout {
+      position: absolute;
+      top: calc(100% + 12px);
+      left: 50%;
+      transform: translate(-50%, -12px);
+      width: clamp(260px, 32vw, 360px);
+      max-height: clamp(220px, 52vh, 480px);
+      padding: 18px;
+      border-radius: var(--radius-lg);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(21, 21, 31, 0.96);
+      box-shadow: 0 32px 60px rgba(0, 0, 0, 0.48);
+      backdrop-filter: blur(18px);
+      opacity: 0;
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+      z-index: 12;
+    }
+
+    .day:is(:hover, .drag-over) .task-flyout {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translate(-50%, 0);
+    }
+
+    .task-flyout .task-list {
       max-height: clamp(220px, 52vh, 480px);
       overflow: auto;
       padding-right: 4px;
     }
 
-    .day:is(:hover, .drag-over) .task-list::-webkit-scrollbar {
-      width: 6px;
+    .task-flyout .empty-state {
+      text-align: center;
+      padding: 16px 0;
+      color: rgba(255, 255, 255, 0.45);
     }
 
-    .day:is(:hover, .drag-over) .task-list::-webkit-scrollbar-thumb {
-      background: rgba(255, 255, 255, 0.18);
-      border-radius: 999px;
+    .focus-range {
+      border-color: rgba(106, 90, 205, 0.45);
+      box-shadow: 0 0 0 2px rgba(106, 90, 205, 0.35);
+    }
+
+    .focus-range::after {
+      opacity: 1;
+      box-shadow: 0 0 0 6px rgba(106, 90, 205, 0.18);
+    }
+
+    .focus-range .day-number {
+      color: var(--accent);
     }
 
     .task-card {
@@ -850,6 +926,82 @@
     let editingDate = null;
     let editingFocusId = null;
     let draggedTask = null;
+    let focusSelection = null;
+    let focusSelectionPointerId = null;
+
+    function detachFocusPointerListeners() {
+      window.removeEventListener('pointerup', handleFocusPointerUp);
+      window.removeEventListener('pointercancel', handleFocusPointerCancel);
+    }
+
+    function clearFocusSelectionHighlights() {
+      calendarGridEl.querySelectorAll('.day.focus-range').forEach((cell) => {
+        cell.classList.remove('focus-range');
+      });
+    }
+
+    function updateFocusSelectionHighlight() {
+      clearFocusSelectionHighlights();
+      if (!focusSelection) return;
+      const { anchor, current } = focusSelection;
+      const [startKey, endKey] = anchor <= current ? [anchor, current] : [current, anchor];
+      const startDate = parseDateKey(startKey);
+      const endDate = parseDateKey(endKey);
+      const cursor = new Date(startDate);
+      while (cursor <= endDate) {
+        const key = formatDateKey(cursor);
+        const cell = calendarGridEl.querySelector(`.day[data-date="${key}"]`);
+        if (cell) {
+          cell.classList.add('focus-range');
+        }
+        cursor.setDate(cursor.getDate() + 1);
+      }
+    }
+
+    function clearFocusSelection() {
+      clearFocusSelectionHighlights();
+      focusSelection = null;
+      focusSelectionPointerId = null;
+      detachFocusPointerListeners();
+    }
+
+    function finalizeFocusSelection() {
+      if (!focusSelection) return;
+      const { anchor, current } = focusSelection;
+      const [startKey, endKey] = anchor <= current ? [anchor, current] : [current, anchor];
+      clearFocusSelection();
+      openFocusModal(null, { start: startKey, end: endKey });
+    }
+
+    function handleFocusPointerUp(event) {
+      if (!focusSelection) {
+        detachFocusPointerListeners();
+        return;
+      }
+      if (focusSelectionPointerId != null && event.pointerId !== focusSelectionPointerId) {
+        return;
+      }
+      finalizeFocusSelection();
+    }
+
+    function handleFocusPointerCancel() {
+      clearFocusSelection();
+    }
+
+    function startFocusSelection(dateKey, pointerId) {
+      clearFocusSelection();
+      focusSelection = { anchor: dateKey, current: dateKey };
+      focusSelectionPointerId = pointerId;
+      updateFocusSelectionHighlight();
+      window.addEventListener('pointerup', handleFocusPointerUp);
+      window.addEventListener('pointercancel', handleFocusPointerCancel);
+    }
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && focusSelection) {
+        clearFocusSelection();
+      }
+    });
 
     function clearDragState() {
       draggedTask = null;
@@ -884,22 +1036,30 @@
       draggedTask = null;
     }
 
-    function openFocusModal(project) {
+    function openFocusModal(project, options = {}) {
       editingFocusId = project ? project.id : null;
       focusModalBackdrop.classList.add('open');
       focusModalTitle.textContent = project ? 'Update focus block' : 'New focus block';
       focusDeleteBtn.style.display = project ? 'inline-flex' : 'none';
 
       focusForm.reset();
-      document.getElementById('focus-color').value = project?.color || '#ff6f91';
+      const colorField = document.getElementById('focus-color');
+      const nameField = document.getElementById('focus-name');
+      const startField = document.getElementById('focus-start');
+      const endField = document.getElementById('focus-end');
+
+      colorField.value = project?.color || options.color || '#ff6f91';
       if (project) {
-        document.getElementById('focus-name').value = project.name;
-        document.getElementById('focus-start').value = project.start;
-        document.getElementById('focus-end').value = project.end;
+        nameField.value = project.name;
+        startField.value = project.start;
+        endField.value = project.end;
       } else {
+        if (options.name) nameField.value = options.name;
         const defaultDate = formatDateKey(today);
-        document.getElementById('focus-start').value = defaultDate;
-        document.getElementById('focus-end').value = defaultDate;
+        const startValue = options.start || defaultDate;
+        const endValue = options.end || options.start || defaultDate;
+        startField.value = startValue;
+        endField.value = endValue;
       }
     }
 
@@ -952,6 +1112,21 @@
         if (realTodayKey === dateKey) {
           cell.classList.add('today');
         }
+
+        cell.addEventListener('pointerdown', (event) => {
+          if (event.button !== 0 || !event.shiftKey) return;
+          if (event.target.closest('.task-card') || event.target.closest('.task-flyout') || event.target.closest('.add-task-btn') || event.target.closest('.project-tag')) {
+            return;
+          }
+          event.preventDefault();
+          startFocusSelection(dateKey, event.pointerId);
+        });
+
+        cell.addEventListener('pointerenter', () => {
+          if (!focusSelection) return;
+          focusSelection.current = dateKey;
+          updateFocusSelectionHighlight();
+        });
 
           cell.addEventListener('dragenter', (event) => {
             event.preventDefault();
@@ -1023,13 +1198,20 @@
 
         const taskList = document.createElement('div');
         taskList.className = 'task-list';
-          const tasks = (state.tasks[dateKey] || []).slice().sort(compareTasks);
-          tasks.forEach((task) => {
+        const preview = document.createElement('div');
+        preview.className = 'task-preview';
+        const tasks = (state.tasks[dateKey] || []).slice().sort(compareTasks);
+        tasks.forEach((task) => {
             const taskCard = document.createElement('div');
             taskCard.className = 'task-card';
             taskCard.draggable = true;
             taskCard.dataset.taskId = task.id;
             const taskColor = task.color || '#6a5acd';
+
+            const previewBar = document.createElement('div');
+            previewBar.className = 'task-preview-bar';
+            previewBar.style.background = hexToRgba(taskColor, 0.85);
+            preview.appendChild(previewBar);
 
             taskCard.addEventListener('dragstart', (event) => {
               draggedTask = { id: task.id, fromDate: dateKey };
@@ -1117,13 +1299,23 @@
         });
 
         if (!tasks.length) {
+          const previewEmpty = document.createElement('div');
+          previewEmpty.className = 'task-preview-empty';
+          previewEmpty.textContent = 'No tasks yet';
+          preview.appendChild(previewEmpty);
+
           const empty = document.createElement('div');
           empty.className = 'empty-state';
           empty.textContent = 'Drop tasks here';
           taskList.appendChild(empty);
         }
 
-        cell.appendChild(taskList);
+        const flyout = document.createElement('div');
+        flyout.className = 'task-flyout';
+        flyout.appendChild(taskList);
+
+        cell.appendChild(preview);
+        cell.appendChild(flyout);
 
         if (realTodayKey === dateKey) {
           const progress = document.createElement('div');
@@ -1136,6 +1328,7 @@
 
       renderFocusList();
       updateCurrentTime();
+      updateFocusSelectionHighlight();
     }
 
     function computeEndTime(start, duration) {
