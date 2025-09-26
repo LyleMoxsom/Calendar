@@ -201,6 +201,10 @@
       letter-spacing: 0.15em;
     }
 
+    .weekday-row span.weekend {
+      color: rgba(255, 255, 255, 0.55);
+    }
+
     .calendar-grid {
       display: grid;
       grid-template-columns: repeat(7, minmax(0, 1fr));
@@ -239,7 +243,7 @@
       pointer-events: none;
     }
 
-    .day:is(:hover, .drag-over) {
+    .day:is(:hover, .drag-over, .show-flyout) {
       transform: scale(1.08);
       border-color: rgba(255, 255, 255, 0.18);
       background: rgba(21, 21, 31, 0.82);
@@ -247,7 +251,7 @@
       box-shadow: 0 28px 60px rgba(0, 0, 0, 0.45);
     }
 
-    .day:is(:hover, .drag-over)::after {
+    .day:is(:hover, .drag-over, .show-flyout)::after {
       opacity: 1;
       box-shadow: 0 0 0 8px rgba(106, 90, 205, 0.18);
     }
@@ -256,6 +260,18 @@
       background: rgba(255, 255, 255, 0.02);
       border-style: dashed;
       border-color: rgba(255, 255, 255, 0.05);
+    }
+
+    .day.weekend {
+      background: rgba(21, 21, 31, 0.6);
+    }
+
+    .day.weekend.empty {
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .day.weekend:is(:hover, .drag-over, .show-flyout) {
+      background: rgba(27, 27, 39, 0.88);
     }
 
     .day-header {
@@ -372,7 +388,7 @@
       z-index: 12;
     }
 
-    .day:is(:hover, .drag-over) .task-flyout {
+    .day:is(:hover, .drag-over, .show-flyout) .task-flyout {
       opacity: 1;
       pointer-events: auto;
       transform: translate(-50%, 0);
@@ -406,7 +422,7 @@
 
     .task-card {
       position: relative;
-      background: rgba(255, 255, 255, 0.07);
+      background: var(--task-bg, rgba(255, 255, 255, 0.07));
       border-radius: var(--radius-sm);
       padding: 8px 12px;
       display: flex;
@@ -415,10 +431,11 @@
       cursor: grab;
       transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.2s ease;
       min-height: 34px;
+      border: 1px solid transparent;
     }
 
     .task-card:hover {
-      background: rgba(255, 255, 255, 0.1);
+      background: var(--task-bg-hover, rgba(255, 255, 255, 0.1));
     }
 
     .task-card:active {
@@ -431,6 +448,11 @@
       opacity: 0.6;
       transform: scale(0.97);
       box-shadow: 0 18px 32px rgba(0, 0, 0, 0.45);
+    }
+
+    .task-card.mission-critical {
+      border-color: rgba(255, 196, 0, 0.75);
+      box-shadow: 0 0 0 1px rgba(255, 196, 0, 0.35);
     }
 
     .task-title {
@@ -464,13 +486,20 @@
 
     .task-meta {
       display: none;
-      flex-wrap: wrap;
-      gap: 6px;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 4px;
       font-size: 12px;
       color: var(--muted);
     }
 
-    .day:is(:hover, .drag-over) .task-meta {
+    .task-chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .day:is(:hover, .drag-over, .show-flyout) .task-meta {
       display: flex;
     }
 
@@ -481,19 +510,11 @@
       color: var(--muted);
     }
 
-    .priority-high {
-      background: rgba(255, 99, 132, 0.15);
-      color: #ff6f91;
-    }
-
-    .priority-medium {
-      background: rgba(255, 206, 86, 0.15);
-      color: #ffce56;
-    }
-
-    .priority-low {
-      background: rgba(75, 192, 192, 0.15);
-      color: #4bc0c0;
+    .task-notes-preview {
+      max-width: 100%;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .day.today {
@@ -522,28 +543,38 @@
       mix-blend-mode: screen;
     }
 
-    .project-tags {
+    .focus-badges {
       display: none;
       flex-wrap: wrap;
       gap: 6px;
       font-size: 11px;
+      margin-bottom: 6px;
     }
 
-    .day:is(:hover, .drag-over) .project-tags {
+    .focus-badges.active {
       display: flex;
     }
 
-    .project-tag {
+    .focus-badge {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      padding: 3px 8px;
+      padding: 4px 10px;
       border-radius: 999px;
       background: rgba(255, 255, 255, 0.07);
       color: var(--muted);
+      cursor: pointer;
+      transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
     }
 
-    .project-tag span {
+    .focus-badge:hover,
+    .focus-badge:focus-visible {
+      background: rgba(255, 255, 255, 0.14);
+      color: var(--text);
+      outline: none;
+    }
+
+    .focus-badge-dot {
       width: 8px;
       height: 8px;
       border-radius: 50%;
@@ -558,67 +589,6 @@
       background: linear-gradient(90deg, var(--accent), rgba(255, 105, 180, 0.9));
       border-radius: 0 4px 0 0;
       pointer-events: none;
-    }
-
-    .focus-panel {
-      background: rgba(255, 255, 255, 0.04);
-      border-radius: var(--radius-lg);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      padding: 24px;
-      display: grid;
-      gap: 24px;
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(18px);
-    }
-
-    .focus-panel h3 {
-      margin: 0;
-      font-size: 16px;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--muted);
-    }
-
-    .focus-list {
-      display: grid;
-      gap: 12px;
-    }
-
-    .focus-card {
-      background: rgba(255, 255, 255, 0.06);
-      border-radius: var(--radius-md);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      padding: 14px;
-      display: grid;
-      gap: 8px;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .focus-card::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      opacity: 0.22;
-      background: var(--focus-color, rgba(255, 255, 255, 0.15));
-      pointer-events: none;
-    }
-
-    .focus-card strong {
-      font-size: 15px;
-      font-weight: 600;
-      z-index: 1;
-    }
-
-    .focus-card .range {
-      font-size: 13px;
-      color: var(--muted);
-      z-index: 1;
-    }
-
-    .focus-card button {
-      justify-self: flex-start;
-      z-index: 1;
     }
 
     .modal-backdrop {
@@ -687,6 +657,63 @@
       resize: vertical;
     }
 
+    .hidden {
+      display: none !important;
+    }
+
+    .color-swatch-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .color-swatch {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 2px solid transparent;
+      background: var(--swatch-color);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+      padding: 0;
+      appearance: none;
+    }
+
+    .color-swatch:hover,
+    .color-swatch:focus-visible {
+      transform: scale(1.05);
+      outline: none;
+    }
+
+    .color-swatch[aria-pressed="true"] {
+      border-color: rgba(255, 255, 255, 0.85);
+      box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.25);
+    }
+
+    .checkbox-row {
+      display: flex;
+      align-items: center;
+    }
+
+    .checkbox-control {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+      color: var(--text);
+      text-transform: none;
+      letter-spacing: 0;
+    }
+
+    .checkbox-control input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--accent);
+    }
+
     .modal-actions {
       display: flex;
       justify-content: space-between;
@@ -730,20 +757,15 @@
 
     <section class="calendar-card">
       <div class="weekday-row">
-        <span>Sun</span>
         <span>Mon</span>
         <span>Tue</span>
         <span>Wed</span>
         <span>Thu</span>
         <span>Fri</span>
-        <span>Sat</span>
+        <span class="weekend">Sat</span>
+        <span class="weekend">Sun</span>
       </div>
       <div class="calendar-grid" id="calendar-grid"></div>
-    </section>
-
-    <section class="focus-panel">
-      <h3>Focus Blocks</h3>
-      <div class="focus-list" id="focus-list"></div>
     </section>
   </div>
 
@@ -757,27 +779,30 @@
         </div>
         <div class="field">
           <label for="task-category">Category</label>
-          <input type="text" id="task-category" name="category" placeholder="Deep Work, Admin, Studio, ...">
+          <select id="task-category" name="category"></select>
         </div>
-        <div class="field">
-          <label for="task-priority">Priority</label>
-          <select id="task-priority" name="priority">
-            <option value="high">High impact</option>
-            <option value="medium" selected>Medium</option>
-            <option value="low">Low</option>
-          </select>
+        <div class="field hidden" id="new-category-name-field">
+          <label for="new-category-name">New category</label>
+          <input type="text" id="new-category-name" name="newCategoryName" placeholder="Category name">
         </div>
-        <div class="field">
-          <label for="task-color">Task Colour</label>
-          <input type="color" id="task-color" name="color" value="#6a5acd">
+        <div class="field hidden" id="new-category-color-field">
+          <label>Base colour</label>
+          <div class="color-swatch-row" id="category-color-options"></div>
+          <input type="hidden" id="new-category-color" name="newCategoryColor">
         </div>
         <div class="field">
           <label for="task-start">Start time</label>
-          <input type="time" id="task-start" name="start" value="09:00">
+          <input type="time" id="task-start" name="start" placeholder="09:00">
         </div>
         <div class="field">
           <label for="task-duration">Time allocation (hours)</label>
           <input type="number" min="0" step="0.5" id="task-duration" name="duration" placeholder="2">
+        </div>
+        <div class="checkbox-row">
+          <label class="checkbox-control">
+            <input type="checkbox" id="task-mission-critical" name="missionCritical">
+            <span>Mission critical</span>
+          </label>
         </div>
         <div class="field">
           <label for="task-notes">Notes</label>
@@ -824,29 +849,172 @@
   </div>
 
   <script>
-    const storageKey = 'focus-flow-calendar-state-v1';
+    const storageKey = 'focus-flow-calendar-state-v2';
+    const legacyStorageKey = 'focus-flow-calendar-state-v1';
+    const categoryPalette = [
+      '#FF6F91',
+      '#FF9671',
+      '#FFC75F',
+      '#F9F871',
+      '#7AD3FF',
+      '#6A5ACD',
+      '#4CAF50',
+      '#F45D01',
+      '#FF5F7E',
+      '#50B5FF'
+    ];
 
-    const defaultState = () => ({
-      tasks: {},
-      projects: [],
-      nextTaskId: 1,
-      nextProjectId: 1
-    });
+    function defaultCategories() {
+      return [
+        { id: 1, name: 'General', color: '#6A5ACD' },
+        { id: 2, name: 'Deep Work', color: '#FF6F91' },
+        { id: 3, name: 'Admin', color: '#FFC75F' }
+      ];
+    }
+
+    const defaultState = () => {
+      const categories = defaultCategories().map((cat) => ({ ...cat }));
+      return {
+        tasks: {},
+        projects: [],
+        categories,
+        nextTaskId: 1,
+        nextProjectId: 1,
+        nextCategoryId: categories.length + 1
+      };
+    };
 
     function loadState() {
       try {
-        const raw = localStorage.getItem(storageKey);
+        let raw = localStorage.getItem(storageKey);
+        let migratedFromLegacy = false;
+        if (!raw) {
+          raw = localStorage.getItem(legacyStorageKey);
+          migratedFromLegacy = Boolean(raw);
+        }
         if (!raw) return defaultState();
         const parsed = JSON.parse(raw);
-        if (!parsed.tasks) parsed.tasks = {};
-        if (!parsed.projects) parsed.projects = [];
+        if (!parsed.tasks || typeof parsed.tasks !== 'object') parsed.tasks = {};
+        if (!Array.isArray(parsed.projects)) parsed.projects = [];
+        if (!Array.isArray(parsed.categories)) {
+          parsed.categories = defaultCategories().map((cat) => ({ ...cat }));
+        }
         if (!parsed.nextTaskId) parsed.nextTaskId = 1;
         if (!parsed.nextProjectId) parsed.nextProjectId = 1;
+        if (!parsed.nextCategoryId) {
+          const maxId = parsed.categories.reduce((max, cat) => Math.max(max, Number(cat.id) || 0), 0);
+          parsed.nextCategoryId = maxId + 1;
+        }
+        migrateTaskData(parsed);
+        if (migratedFromLegacy) {
+          try {
+            localStorage.removeItem(legacyStorageKey);
+            localStorage.setItem(storageKey, JSON.stringify(parsed));
+          } catch (saveErr) {
+            console.warn('Unable to persist migrated data', saveErr);
+          }
+        }
         return parsed;
       } catch (err) {
         console.error('Failed to parse state', err);
         return defaultState();
       }
+    }
+
+    function pickCategoryColor(state, fallback) {
+      if (fallback) return fallback;
+      const used = new Set(
+        state.categories
+          .map((cat) => (typeof cat.color === 'string' ? cat.color.toLowerCase() : null))
+          .filter(Boolean)
+      );
+      for (const color of categoryPalette) {
+        if (!used.has(color.toLowerCase())) return color;
+      }
+      return categoryPalette[state.categories.length % categoryPalette.length];
+    }
+
+    function migrateTaskData(state) {
+      const categoriesByName = new Map();
+      state.categories = state.categories.map((category, index) => {
+        const name = (category.name || '').trim() || `Category ${index + 1}`;
+        const id = Number(category.id) || state.nextCategoryId++;
+        const normalized = { id, name, color: category.color || categoryPalette[index % categoryPalette.length] };
+        categoriesByName.set(name.toLowerCase(), normalized);
+        return normalized;
+      });
+
+      const ensureCategory = (name, colorHint) => {
+        const key = name.toLowerCase();
+        if (categoriesByName.has(key)) return categoriesByName.get(key);
+        const category = {
+          id: state.nextCategoryId++,
+          name,
+          color: pickCategoryColor(state, colorHint)
+        };
+        state.categories.push(category);
+        categoriesByName.set(key, category);
+        return category;
+      };
+
+      const generalCategory = ensureCategory('General', '#6A5ACD');
+
+      Object.keys(state.tasks).forEach((dateKey) => {
+        const tasks = Array.isArray(state.tasks[dateKey]) ? state.tasks[dateKey] : [];
+        tasks.forEach((task) => {
+          if (!task || typeof task !== 'object') return;
+          task.title = (task.title || '').trim();
+          if (!task.title) task.title = 'Untitled task';
+
+          if (task.priority === 'high' && !task.missionCritical) {
+            task.missionCritical = true;
+          }
+          delete task.priority;
+
+          let categoryName = (task.category || '').trim();
+          if (!categoryName) {
+            categoryName = generalCategory.name;
+          }
+          const category = ensureCategory(categoryName, task.color);
+          task.category = category.name;
+
+          if (task.start && typeof task.start === 'string') {
+            task.start = task.start.trim();
+          }
+          if (!task.start) {
+            delete task.start;
+          }
+
+          if (task.duration !== undefined && task.duration !== null && task.duration !== '') {
+            const numericDuration = Number(task.duration);
+            if (!Number.isNaN(numericDuration) && numericDuration >= 0) {
+              task.duration = numericDuration;
+            } else {
+              delete task.duration;
+            }
+          } else {
+            delete task.duration;
+          }
+
+          if (typeof task.notes === 'string') {
+            task.notes = task.notes.trim();
+            if (!task.notes) delete task.notes;
+          }
+
+          if (task.color && !category.color) {
+            category.color = task.color;
+          }
+          delete task.color;
+
+          task.missionCritical = Boolean(task.missionCritical);
+        });
+        state.tasks[dateKey] = tasks.filter(Boolean).sort(compareTasks);
+        if (state.tasks[dateKey].length === 0) {
+          delete state.tasks[dateKey];
+        }
+      });
+
+      state.categories.sort((a, b) => a.name.localeCompare(b.name));
     }
 
     function saveState() {
@@ -874,16 +1042,20 @@
     }
 
     function compareTasks(a, b) {
-      const priorityRank = { high: 0, medium: 1, low: 2 };
       const timeA = a.start || '';
       const timeB = b.start || '';
-      if (timeA && timeB && timeA !== timeB) {
+      const hasTimeA = Boolean(timeA);
+      const hasTimeB = Boolean(timeB);
+      if (!hasTimeA && hasTimeB) return -1;
+      if (hasTimeA && !hasTimeB) return 1;
+      if (hasTimeA && hasTimeB && timeA !== timeB) {
         return timeA.localeCompare(timeB);
       }
-      if (timeA && !timeB) return -1;
-      if (!timeA && timeB) return 1;
-      const priorityDiff = priorityRank[a.priority || 'medium'] - priorityRank[b.priority || 'medium'];
-      if (priorityDiff !== 0) return priorityDiff;
+      if (a.missionCritical && !b.missionCritical) return -1;
+      if (!a.missionCritical && b.missionCritical) return 1;
+      const durationA = Number(a.duration) || 0;
+      const durationB = Number(b.duration) || 0;
+      if (durationA !== durationB) return durationB - durationA;
       return a.title.localeCompare(b.title);
     }
 
@@ -899,17 +1071,116 @@
       return `rgba(${r}, ${g}, ${b}, ${alpha})`;
     }
 
+    function hexToRgb(hex) {
+      if (!hex || typeof hex !== 'string') return null;
+      const stripped = hex.replace('#', '');
+      const normalized = stripped.length === 3
+        ? stripped.split('').map((c) => c + c).join('')
+        : stripped;
+      if (normalized.length !== 6) return null;
+      const bigint = parseInt(normalized, 16);
+      if (Number.isNaN(bigint)) return null;
+      return {
+        r: (bigint >> 16) & 255,
+        g: (bigint >> 8) & 255,
+        b: bigint & 255
+      };
+    }
+
+    function rgbToHex(r, g, b) {
+      const toHex = (value) => {
+        const clamped = Math.max(0, Math.min(255, Math.round(value)));
+        return clamped.toString(16).padStart(2, '0');
+      };
+      return `#${toHex(r)}${toHex(g)}${toHex(b)}`.toUpperCase();
+    }
+
+    function rgbToHsl(r, g, b) {
+      r /= 255;
+      g /= 255;
+      b /= 255;
+      const max = Math.max(r, g, b);
+      const min = Math.min(r, g, b);
+      let h = 0;
+      let s = 0;
+      const l = (max + min) / 2;
+      if (max !== min) {
+        const d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        switch (max) {
+          case r:
+            h = (g - b) / d + (g < b ? 6 : 0);
+            break;
+          case g:
+            h = (b - r) / d + 2;
+            break;
+          case b:
+            h = (r - g) / d + 4;
+            break;
+        }
+        h /= 6;
+      }
+      return { h, s, l };
+    }
+
+    function hslToRgb(h, s, l) {
+      if (s === 0) {
+        const value = l * 255;
+        return [value, value, value];
+      }
+      const hue2rgb = (p, q, t) => {
+        if (t < 0) t += 1;
+        if (t > 1) t -= 1;
+        if (t < 1 / 6) return p + (q - p) * 6 * t;
+        if (t < 1 / 2) return q;
+        if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+        return p;
+      };
+      const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+      const p = 2 * l - q;
+      const r = hue2rgb(p, q, h + 1 / 3);
+      const g = hue2rgb(p, q, h);
+      const b = hue2rgb(p, q, h - 1 / 3);
+      return [r * 255, g * 255, b * 255];
+    }
+
+    function clamp(value, min, max) {
+      return Math.min(max, Math.max(min, value));
+    }
+
+    function shadeColorByDuration(hex, duration) {
+      const rgb = hexToRgb(hex);
+      if (!rgb) return '#6A5ACD';
+      const { h, s, l } = rgbToHsl(rgb.r, rgb.g, rgb.b);
+      const hours = Number(duration) || 0;
+      const normalized = clamp(hours / 6, 0, 1);
+      const darkening = normalized * 0.3;
+      const lightenBoost = hours === 0 ? 0.12 : 0;
+      const targetLightness = clamp(l - darkening + lightenBoost, 0.2, 0.78);
+      const [nr, ng, nb] = hslToRgb(h, s, targetLightness);
+      return rgbToHex(nr, ng, nb);
+    }
+
     const monthLabelEl = document.getElementById('month-label');
     const calendarGridEl = document.getElementById('calendar-grid');
     const currentDateEl = document.querySelector('.current-date');
     const currentTimeEl = document.querySelector('.current-time');
-    const focusListEl = document.getElementById('focus-list');
-
     const taskModalBackdrop = document.getElementById('task-modal');
     const taskForm = document.getElementById('task-form');
     const taskModalTitle = document.getElementById('task-modal-title');
     const taskDeleteBtn = document.getElementById('task-delete');
     const taskCancelBtn = document.getElementById('task-cancel');
+    const taskCategorySelect = document.getElementById('task-category');
+    const newCategoryNameField = document.getElementById('new-category-name-field');
+    const newCategoryNameInput = document.getElementById('new-category-name');
+    const newCategoryColorField = document.getElementById('new-category-color-field');
+    const newCategoryColorInput = document.getElementById('new-category-color');
+    const categoryColorOptions = document.getElementById('category-color-options');
+    const missionCriticalInput = document.getElementById('task-mission-critical');
+    const taskTitleInput = document.getElementById('task-title');
+    const taskStartInput = document.getElementById('task-start');
+    const taskDurationInput = document.getElementById('task-duration');
+    const taskNotesInput = document.getElementById('task-notes');
 
     const focusModalBackdrop = document.getElementById('focus-modal');
     const focusForm = document.getElementById('focus-form');
@@ -917,7 +1188,11 @@
     const focusDeleteBtn = document.getElementById('focus-delete');
     const focusCancelBtn = document.getElementById('focus-cancel');
 
+    renderCategoryColorOptions();
+    selectCategoryColor(categoryPalette[0]);
+
     let state = loadState();
+    ensureGeneralCategoryExists();
     let today = new Date();
     let viewYear = today.getFullYear();
     let viewMonth = today.getMonth();
@@ -1009,6 +1284,106 @@
       document.querySelectorAll('.task-card.is-dragging').forEach((card) => card.classList.remove('is-dragging'));
     }
 
+    function renderCategoryColorOptions() {
+      if (!categoryColorOptions) return;
+      categoryColorOptions.innerHTML = '';
+      categoryPalette.forEach((color) => {
+        const swatch = document.createElement('button');
+        swatch.type = 'button';
+        swatch.className = 'color-swatch';
+        swatch.style.setProperty('--swatch-color', color);
+        swatch.dataset.color = color;
+        swatch.setAttribute('aria-pressed', 'false');
+        swatch.title = color;
+        swatch.addEventListener('click', () => selectCategoryColor(color));
+        swatch.addEventListener('keydown', (event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            selectCategoryColor(color);
+          }
+        });
+        categoryColorOptions.appendChild(swatch);
+      });
+    }
+
+    function selectCategoryColor(color) {
+      if (!newCategoryColorInput) return;
+      newCategoryColorInput.value = color;
+      if (!categoryColorOptions) return;
+      categoryColorOptions.querySelectorAll('.color-swatch').forEach((swatch) => {
+        swatch.setAttribute('aria-pressed', swatch.dataset.color === color ? 'true' : 'false');
+      });
+    }
+
+    function toggleNewCategoryFields(show) {
+      newCategoryNameField.classList.toggle('hidden', !show);
+      newCategoryColorField.classList.toggle('hidden', !show);
+      if (show) {
+        if (!newCategoryColorInput.value) {
+          selectCategoryColor(categoryPalette[0]);
+        } else {
+          selectCategoryColor(newCategoryColorInput.value);
+        }
+        newCategoryNameInput.focus();
+      } else {
+        newCategoryNameInput.value = '';
+        newCategoryColorInput.value = '';
+        categoryColorOptions.querySelectorAll('.color-swatch').forEach((swatch) => {
+          swatch.setAttribute('aria-pressed', 'false');
+        });
+      }
+    }
+
+    function getCategoryByName(name) {
+      if (!name || !Array.isArray(state.categories)) return null;
+      const target = name.toLowerCase();
+      return state.categories.find((category) => category.name.toLowerCase() === target) || null;
+    }
+
+    function ensureGeneralCategoryExists() {
+      let general = getCategoryByName('General');
+      if (!general) {
+        general = { id: state.nextCategoryId++, name: 'General', color: '#6A5ACD' };
+        state.categories.push(general);
+      }
+      return general;
+    }
+
+    function populateCategorySelect(selectedName, forceNew = false) {
+      ensureGeneralCategoryExists();
+      const sorted = state.categories
+        .slice()
+        .sort((a, b) => {
+          if (a.name === 'General') return -1;
+          if (b.name === 'General') return 1;
+          return a.name.localeCompare(b.name);
+        });
+
+      taskCategorySelect.innerHTML = '';
+      sorted.forEach((category) => {
+        const option = document.createElement('option');
+        option.value = category.name;
+        option.textContent = category.name;
+        taskCategorySelect.appendChild(option);
+      });
+
+      const newOption = document.createElement('option');
+      newOption.value = '__new__';
+      newOption.textContent = 'Add new category…';
+      taskCategorySelect.appendChild(newOption);
+
+      if (forceNew) {
+        taskCategorySelect.value = '__new__';
+      } else if (selectedName) {
+        const match = sorted.find((category) => category.name === selectedName);
+        taskCategorySelect.value = match ? match.name : (sorted[0]?.name || '__new__');
+      } else {
+        taskCategorySelect.value = sorted[0] ? sorted[0].name : '__new__';
+      }
+
+      toggleNewCategoryFields(taskCategorySelect.value === '__new__');
+    }
+
     function openTaskModal(dateKey, task) {
       editingDate = dateKey;
       editingTask = task ? { ...task } : null;
@@ -1017,16 +1392,22 @@
       taskDeleteBtn.style.display = task ? 'inline-flex' : 'none';
 
       taskForm.reset();
-      document.getElementById('task-start').value = task?.start || '09:00';
-      document.getElementById('task-priority').value = task?.priority || 'medium';
-      document.getElementById('task-color').value = task?.color || '#6a5acd';
+      missionCriticalInput.checked = Boolean(task?.missionCritical);
+      taskTitleInput.value = task?.title || '';
+      taskStartInput.value = task?.start || '';
+      taskDurationInput.value = task?.duration ?? '';
+      taskNotesInput.value = task?.notes || '';
+      newCategoryNameInput.value = '';
+      newCategoryColorInput.value = '';
+      populateCategorySelect(task?.category || null);
 
-      if (task) {
-        document.getElementById('task-title').value = task.title;
-        document.getElementById('task-category').value = task.category || '';
-        document.getElementById('task-duration').value = task.duration ?? '';
-        document.getElementById('task-notes').value = task.notes || '';
-      }
+        if (task && taskCategorySelect.value === '__new__') {
+          newCategoryNameInput.value = task.category || '';
+          const fallbackColor = getCategoryByName(task.category)?.color || pickCategoryColor(state);
+          newCategoryColorInput.value = fallbackColor;
+          toggleNewCategoryFields(true);
+          selectCategoryColor(fallbackColor);
+        }
     }
 
     function closeTaskModal() {
@@ -1034,6 +1415,8 @@
       editingTask = null;
       editingDate = null;
       draggedTask = null;
+      missionCriticalInput.checked = false;
+      toggleNewCategoryFields(false);
     }
 
     function openFocusModal(project, options = {}) {
@@ -1089,7 +1472,7 @@
 
       calendarGridEl.innerHTML = '';
       const firstDay = new Date(viewYear, viewMonth, 1);
-      const startWeekday = firstDay.getDay();
+      const startWeekday = (firstDay.getDay() + 6) % 7;
       const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
       const totalCells = Math.ceil((startWeekday + daysInMonth) / 7) * 7;
       const realTodayKey = formatDateKey(new Date());
@@ -1109,13 +1492,26 @@
         const dateKey = formatDateKey(date);
         cell.dataset.date = dateKey;
 
+        const weekday = date.getDay();
+        if (weekday === 0 || weekday === 6) {
+          cell.classList.add('weekend');
+        }
+
         if (realTodayKey === dateKey) {
           cell.classList.add('today');
         }
 
+        cell.addEventListener('mouseenter', () => {
+          cell.classList.add('show-flyout');
+        });
+
+        cell.addEventListener('mouseleave', () => {
+          cell.classList.remove('show-flyout');
+        });
+
         cell.addEventListener('pointerdown', (event) => {
           if (event.button !== 0 || !event.shiftKey) return;
-          if (event.target.closest('.task-card') || event.target.closest('.task-flyout') || event.target.closest('.add-task-btn') || event.target.closest('.project-tag')) {
+          if (event.target.closest('.task-card') || event.target.closest('.task-flyout') || event.target.closest('.add-task-btn') || event.target.closest('.focus-badge')) {
             return;
           }
           event.preventDefault();
@@ -1172,8 +1568,8 @@
 
         const overlayStack = document.createElement('div');
         overlayStack.className = 'focus-overlay-stack';
-        const tagsWrap = document.createElement('div');
-        tagsWrap.className = 'project-tags';
+        const focusBadges = document.createElement('div');
+        focusBadges.className = 'focus-badges';
 
         const activeProjects = state.projects.filter((project) => project.start <= dateKey && project.end >= dateKey);
         activeProjects.forEach((project) => {
@@ -1182,19 +1578,34 @@
           overlay.style.background = hexToRgba(project.color, 0.18);
           overlayStack.appendChild(overlay);
 
-          const tag = document.createElement('span');
-          tag.className = 'project-tag';
+          const badge = document.createElement('button');
+          badge.type = 'button';
+          badge.className = 'focus-badge';
           const dot = document.createElement('span');
+          dot.className = 'focus-badge-dot';
           dot.style.background = project.color;
-          tag.appendChild(dot);
-          tag.append(project.name);
-          tagsWrap.appendChild(tag);
+          badge.appendChild(dot);
+          const label = document.createElement('span');
+          label.textContent = project.name;
+          badge.appendChild(label);
+          badge.addEventListener('click', (event) => {
+            event.stopPropagation();
+            openFocusModal(project);
+          });
+          badge.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+              event.preventDefault();
+              openFocusModal(project);
+            }
+          });
+          focusBadges.appendChild(badge);
         });
 
-        cell.appendChild(overlayStack);
         if (activeProjects.length > 0) {
-          cell.appendChild(tagsWrap);
+          focusBadges.classList.add('active');
         }
+
+        cell.appendChild(overlayStack);
 
         const taskList = document.createElement('div');
         taskList.className = 'task-list';
@@ -1206,12 +1617,22 @@
             taskCard.className = 'task-card';
             taskCard.draggable = true;
             taskCard.dataset.taskId = task.id;
-            const taskColor = task.color || '#6a5acd';
+
+            const category = getCategoryByName(task.category) || ensureGeneralCategoryExists();
+            const baseColor = category?.color || '#6A5ACD';
+            const shadeColor = shadeColorByDuration(baseColor, task.duration);
 
             const previewBar = document.createElement('div');
             previewBar.className = 'task-preview-bar';
-            previewBar.style.background = hexToRgba(taskColor, 0.85);
+            previewBar.style.background = hexToRgba(shadeColor, 0.85);
             preview.appendChild(previewBar);
+
+            taskCard.style.setProperty('--task-bg', hexToRgba(shadeColor, 0.22));
+            taskCard.style.setProperty('--task-bg-hover', hexToRgba(shadeColor, 0.28));
+
+            if (task.missionCritical) {
+              taskCard.classList.add('mission-critical');
+            }
 
             taskCard.addEventListener('dragstart', (event) => {
               draggedTask = { id: task.id, fromDate: dateKey };
@@ -1233,7 +1654,7 @@
 
             const colorDot = document.createElement('span');
             colorDot.className = 'task-dot';
-            colorDot.style.background = taskColor;
+            colorDot.style.background = shadeColor;
             title.appendChild(colorDot);
 
             const name = document.createElement('span');
@@ -1258,44 +1679,53 @@
 
             const meta = document.createElement('div');
             meta.className = 'task-meta';
+            const chipRow = document.createElement('div');
+            chipRow.className = 'task-chip-row';
 
-            if (timeRange) {
-              const timeChip = document.createElement('span');
-              timeChip.className = 'task-chip';
-              timeChip.textContent = timeRange;
-              meta.appendChild(timeChip);
+            if (category) {
+              const categoryChip = document.createElement('span');
+              categoryChip.className = 'task-chip';
+              categoryChip.textContent = category.name;
+              chipRow.appendChild(categoryChip);
             }
 
-          if (task.category) {
-            const categoryChip = document.createElement('span');
-            categoryChip.className = 'task-chip';
-            categoryChip.textContent = task.category;
-            meta.appendChild(categoryChip);
-          }
+            const durationValue = Number(task.duration);
+            if (!Number.isNaN(durationValue) && durationValue > 0) {
+              const durationChip = document.createElement('span');
+              durationChip.className = 'task-chip';
+              const formatted = Number.isInteger(durationValue)
+                ? `${durationValue}h`
+                : `${durationValue.toFixed(1)}h`;
+              durationChip.textContent = `Duration ${formatted}`;
+              chipRow.appendChild(durationChip);
+            }
 
-          if (task.priority) {
-            const priorityChip = document.createElement('span');
-            priorityChip.className = 'task-chip';
-            if (task.priority === 'high') priorityChip.classList.add('priority-high');
-            if (task.priority === 'medium') priorityChip.classList.add('priority-medium');
-            if (task.priority === 'low') priorityChip.classList.add('priority-low');
-            priorityChip.textContent = `${task.priority.charAt(0).toUpperCase()}${task.priority.slice(1)} priority`;
-            meta.appendChild(priorityChip);
-          }
+            if (task.missionCritical) {
+              const missionChip = document.createElement('span');
+              missionChip.className = 'task-chip';
+              missionChip.textContent = 'Mission critical';
+              chipRow.appendChild(missionChip);
+            }
 
-          if (task.notes) {
-            const notesChip = document.createElement('span');
-            notesChip.className = 'task-chip';
-            notesChip.textContent = 'Notes';
-            notesChip.title = task.notes;
-            meta.appendChild(notesChip);
-          }
+            if (chipRow.children.length) {
+              meta.appendChild(chipRow);
+            }
 
-          if (meta.children.length) {
-            taskCard.appendChild(meta);
-          }
+            if (task.notes) {
+              const firstLine = task.notes.split(/\r?\n/)[0].trim();
+              if (firstLine) {
+                const notesPreview = document.createElement('div');
+                notesPreview.className = 'task-notes-preview';
+                notesPreview.textContent = firstLine;
+                meta.appendChild(notesPreview);
+              }
+            }
 
-          taskList.appendChild(taskCard);
+            if (meta.children.length) {
+              taskCard.appendChild(meta);
+            }
+
+            taskList.appendChild(taskCard);
         });
 
         if (!tasks.length) {
@@ -1312,6 +1742,9 @@
 
         const flyout = document.createElement('div');
         flyout.className = 'task-flyout';
+        if (activeProjects.length > 0) {
+          flyout.appendChild(focusBadges);
+        }
         flyout.appendChild(taskList);
 
         cell.appendChild(preview);
@@ -1326,7 +1759,6 @@
         calendarGridEl.appendChild(cell);
       }
 
-      renderFocusList();
       updateCurrentTime();
       updateFocusSelectionHighlight();
     }
@@ -1355,44 +1787,6 @@
       state.tasks[newDateKey].sort(compareTasks);
       saveState();
       renderCalendar();
-    }
-
-    function renderFocusList() {
-      focusListEl.innerHTML = '';
-      if (!state.projects.length) {
-        const empty = document.createElement('div');
-        empty.className = 'empty-state';
-        empty.textContent = 'No focus blocks yet. Use them to colour a stretch of days for a project.';
-        focusListEl.appendChild(empty);
-        return;
-      }
-
-      const sorted = state.projects.slice().sort((a, b) => a.start.localeCompare(b.start));
-      sorted.forEach((project) => {
-        const card = document.createElement('div');
-        card.className = 'focus-card';
-        card.style.setProperty('--focus-color', hexToRgba(project.color, 0.45));
-
-        const title = document.createElement('strong');
-        title.textContent = project.name;
-        card.appendChild(title);
-
-        const range = document.createElement('div');
-        range.className = 'range';
-        const startDate = parseDateKey(project.start).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-        const endDate = parseDateKey(project.end).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-        range.textContent = `${startDate} → ${endDate}`;
-        card.appendChild(range);
-
-        const editButton = document.createElement('button');
-        editButton.className = 'btn btn-ghost';
-        editButton.type = 'button';
-        editButton.textContent = 'Edit';
-        editButton.addEventListener('click', () => openFocusModal(project));
-        card.appendChild(editButton);
-
-        focusListEl.appendChild(card);
-      });
     }
 
     document.getElementById('prev-month').addEventListener('click', () => {
@@ -1427,6 +1821,14 @@
     });
 
     taskCancelBtn.addEventListener('click', closeTaskModal);
+    taskCategorySelect.addEventListener('change', () => {
+      const isNew = taskCategorySelect.value === '__new__';
+      toggleNewCategoryFields(isNew);
+      if (!isNew) {
+        newCategoryNameInput.value = '';
+        newCategoryColorInput.value = '';
+      }
+    });
     focusCancelBtn.addEventListener('click', closeFocusModal);
 
     taskModalBackdrop.addEventListener('click', (event) => {
@@ -1447,20 +1849,45 @@
       const title = formData.get('title').trim();
       if (!title) return;
 
+      let categorySelection = formData.get('category');
+      const isNewCategory = categorySelection === '__new__';
+      let categoryName = isNewCategory ? (formData.get('newCategoryName') || '').trim() : (categorySelection || '').trim();
+
+      if (isNewCategory) {
+        if (!categoryName) {
+          alert('Please provide a name for the new category.');
+          return;
+        }
+        const existing = getCategoryByName(categoryName);
+        if (existing) {
+          categoryName = existing.name;
+        } else {
+          const colorValue = formData.get('newCategoryColor') || categoryPalette[0];
+          const newCategory = { id: state.nextCategoryId++, name: categoryName, color: colorValue };
+          state.categories.push(newCategory);
+        }
+      } else if (!categoryName) {
+        categoryName = ensureGeneralCategoryExists().name;
+      }
+
+      const start = (formData.get('start') || '').trim();
+      const durationRaw = formData.get('duration');
+      const durationValue = durationRaw !== null && durationRaw !== '' ? Number(durationRaw) : null;
+      if (durationValue != null && (Number.isNaN(durationValue) || durationValue < 0)) {
+        alert('Please provide a valid duration.');
+        return;
+      }
+      const notes = (formData.get('notes') || '').trim();
+
       const payload = {
         title,
-        category: formData.get('category').trim(),
-        priority: formData.get('priority'),
-        color: formData.get('color'),
-        start: formData.get('start'),
-        duration: formData.get('duration'),
-        notes: formData.get('notes').trim()
+        category: categoryName,
+        missionCritical: Boolean(missionCriticalInput.checked)
       };
 
-      if (payload.duration === '') delete payload.duration;
-      if (!payload.category) delete payload.category;
-      if (!payload.notes) delete payload.notes;
-      if (!payload.start) delete payload.start;
+      if (start) payload.start = start;
+      if (durationValue != null) payload.duration = durationValue;
+      if (notes) payload.notes = notes;
 
       if (editingTask) {
         const tasks = ensureTasks(editingDate);
@@ -1561,6 +1988,5 @@
 
     renderCalendar();
   </script>
-  <!-- test commit -->
 </body>
 </html>
