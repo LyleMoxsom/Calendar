@@ -382,6 +382,11 @@
       overflow: hidden;
     }
 
+    .task-preview-bar.mission-critical {
+      box-shadow: 0 0 0 2px rgba(255, 196, 0, 0.5),
+                  0 0 12px rgba(255, 196, 0, 0.3);
+    }
+
     .task-preview-bar::after {
       content: '';
       position: absolute;
@@ -438,122 +443,6 @@
       color: rgba(255, 255, 255, 0.45);
     }
 
-    .mission-critical-panel {
-      position: absolute;
-      top: 0;
-      left: -320px;
-      width: clamp(240px, 22vw, 300px);
-      padding: 18px 20px;
-      border-radius: var(--radius-md);
-      border: 1px solid rgba(255, 255, 255, 0.16);
-      background: rgba(28, 28, 44, 0.95);
-      box-shadow: 0 28px 50px rgba(0, 0, 0, 0.45);
-      backdrop-filter: blur(18px);
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.2s ease;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      z-index: 20;
-    }
-
-    .mission-critical-panel.visible {
-      opacity: 1;
-      pointer-events: auto;
-    }
-
-    .mission-critical-panel h3 {
-      margin: 0;
-      font-size: 16px;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-    }
-
-    .mission-critical-week {
-      margin: 0;
-      font-size: 13px;
-      color: var(--muted);
-      letter-spacing: 0.04em;
-    }
-
-    .mission-critical-content {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      max-height: 320px;
-      overflow: auto;
-      padding-right: 4px;
-      scrollbar-width: thin;
-      scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
-    }
-
-    .mission-critical-content::-webkit-scrollbar {
-      width: 6px;
-    }
-
-    .mission-critical-content::-webkit-scrollbar-thumb {
-      background: rgba(255, 255, 255, 0.18);
-      border-radius: 999px;
-    }
-
-    .mission-critical-empty {
-      font-size: 13px;
-      color: rgba(255, 255, 255, 0.6);
-    }
-
-    .mission-critical-item {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      align-items: flex-start;
-      width: 100%;
-      padding: 10px 12px;
-      border-radius: var(--radius-sm);
-      border: 1px solid transparent;
-      background: rgba(255, 255, 255, 0.06);
-      color: inherit;
-      text-align: left;
-      cursor: pointer;
-      transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
-    }
-
-    .mission-critical-item:hover,
-    .mission-critical-item:focus-visible {
-      transform: translateX(2px);
-      border-color: rgba(255, 255, 255, 0.28);
-      background: rgba(255, 255, 255, 0.1);
-      outline: none;
-    }
-
-    .mission-critical-item-title {
-      font-weight: 600;
-      font-size: 14px;
-    }
-
-    .mission-critical-item-meta {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      font-size: 12px;
-      color: var(--muted);
-    }
-
-    .mission-critical-item-meta span {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 2px 8px;
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.08);
-    }
-
-    .mission-critical-item-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-    }
-
     .focus-range {
       border-color: rgba(106, 90, 205, 0.45);
       box-shadow: 0 0 0 2px rgba(106, 90, 205, 0.35);
@@ -601,8 +490,22 @@
     }
 
     .task-card.mission-critical {
-      border-color: rgba(255, 196, 0, 0.75);
-      box-shadow: 0 0 0 1px rgba(255, 196, 0, 0.35);
+      border-color: rgba(255, 196, 0, 0.85);
+      box-shadow: 0 0 0 2px rgba(255, 196, 0, 0.45),
+                  0 12px 24px rgba(255, 196, 0, 0.18);
+      background:
+        linear-gradient(135deg, rgba(255, 196, 0, 0.16), rgba(255, 196, 0, 0.04)),
+        var(--task-bg, rgba(255, 255, 255, 0.07));
+    }
+
+    .task-card.mission-critical:hover {
+      border-color: rgba(255, 214, 64, 0.95);
+      box-shadow: 0 0 0 2px rgba(255, 214, 64, 0.6),
+                  0 14px 28px rgba(255, 214, 64, 0.24);
+    }
+
+    .task-card.mission-critical .task-dot {
+      box-shadow: 0 0 0 3px rgba(255, 196, 0, 0.4);
     }
 
     .task-title {
@@ -939,32 +842,6 @@
       font-size: 13px;
     }
 
-    @media (max-width: 1100px) {
-      .mission-critical-panel {
-        left: -260px;
-        width: clamp(220px, 36vw, 280px);
-      }
-    }
-
-    @media (max-width: 900px) {
-      .mission-critical-panel {
-        position: static;
-        width: 100%;
-        left: auto;
-        right: auto;
-        opacity: 1;
-        pointer-events: auto;
-        display: none;
-      }
-
-      .mission-critical-panel.visible {
-        display: flex;
-      }
-
-      .calendar-scroll {
-        gap: 40px;
-      }
-    }
   </style>
 </head>
 <body>
@@ -988,11 +865,6 @@
     </section>
 
     <section class="calendar-card">
-      <div class="mission-critical-panel" id="mission-critical-panel" aria-live="polite">
-        <h3>This week&rsquo;s mission critical tasks</h3>
-        <p class="mission-critical-week" id="mission-critical-week"></p>
-        <div class="mission-critical-content" id="mission-critical-content"></div>
-      </div>
       <div class="calendar-scroll" id="calendar-grid"></div>
     </section>
   </div>
@@ -1414,11 +1286,6 @@
     const taskNotesInput = document.getElementById('task-notes');
     const categoryPreviewEl = document.getElementById('category-preview');
     const deleteCategoryBtn = document.getElementById('delete-category');
-    const missionCriticalPanel = document.getElementById('mission-critical-panel');
-    const missionCriticalWeekEl = document.getElementById('mission-critical-week');
-    const missionCriticalContent = document.getElementById('mission-critical-content');
-    const calendarCardEl = document.querySelector('.calendar-card');
-
     if (deleteCategoryBtn) {
       deleteCategoryBtn.disabled = true;
       deleteCategoryBtn.setAttribute('aria-disabled', 'true');
@@ -1443,9 +1310,6 @@
     let draggedTask = null;
     let focusSelection = null;
     let focusSelectionPointerId = null;
-    let missionPanelHideTimer = null;
-    let activeMissionWeekStart = null;
-    let activeHoverCell = null;
     let initialScrollCompleted = false;
 
     function detachFocusPointerListeners() {
@@ -1835,192 +1699,33 @@
       return months;
     }
 
-    function getWeekStartKey(dateKey) {
-      const date = parseDateKey(dateKey);
-      if (!date || Number.isNaN(date.getTime())) return dateKey;
-      const offset = (date.getDay() + 6) % 7;
-      const startDate = new Date(date);
-      startDate.setDate(startDate.getDate() - offset);
-      return formatDateKey(startDate);
-    }
-
-    function getMissionCriticalEntries(weekStartKey) {
-      const entries = [];
-      const startDate = parseDateKey(weekStartKey);
-      if (!startDate || Number.isNaN(startDate.getTime())) return entries;
-      for (let i = 0; i < 7; i++) {
-        const current = new Date(startDate);
-        current.setDate(startDate.getDate() + i);
-        const key = formatDateKey(current);
-        const tasks = (state.tasks[key] || []).filter((task) => task.missionCritical);
-        tasks.forEach((task) => {
-          entries.push({ task, dateKey: key, date: new Date(current) });
-        });
-      }
-      entries.sort((a, b) => {
-        if (a.dateKey !== b.dateKey) return a.dateKey.localeCompare(b.dateKey);
-        return compareTasks(a.task, b.task);
-      });
-      return entries;
-    }
-
     function getTaskTimeRange(task) {
       if (!task || !task.start) return '';
       const endTime = task.duration ? computeEndTime(task.start, task.duration) : null;
       return endTime ? `${task.start} - ${endTime}` : task.start;
     }
 
-    function renderMissionCriticalPanel(entries, weekStartKey) {
-      if (!missionCriticalPanel || !missionCriticalContent || !missionCriticalWeekEl) return;
-      missionCriticalContent.innerHTML = '';
-      activeMissionWeekStart = weekStartKey;
 
-      const startDate = parseDateKey(weekStartKey);
-      if (startDate && !Number.isNaN(startDate.getTime())) {
-        const endDate = new Date(startDate);
-        endDate.setDate(endDate.getDate() + 6);
-        const startLabel = startDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-        const endLabel = endDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-        missionCriticalWeekEl.textContent = `${startLabel} – ${endLabel}`;
-      } else {
-        missionCriticalWeekEl.textContent = '';
-      }
-
-      if (!entries.length) {
-        const empty = document.createElement('div');
-        empty.className = 'mission-critical-empty';
-        empty.textContent = 'No mission critical tasks scheduled.';
-        missionCriticalContent.appendChild(empty);
-        return;
-      }
-
-      entries.forEach((entry) => {
-        const button = document.createElement('button');
-        button.type = 'button';
-        button.className = 'mission-critical-item';
-        button.dataset.date = entry.dateKey;
-        button.dataset.taskId = String(entry.task.id);
-
-        const title = document.createElement('span');
-        title.className = 'mission-critical-item-title';
-        title.textContent = entry.task.title;
-        button.appendChild(title);
-
-        const meta = document.createElement('div');
-        meta.className = 'mission-critical-item-meta';
-
-        const daySpan = document.createElement('span');
-        daySpan.textContent = entry.date.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
-        meta.appendChild(daySpan);
-
-        const timeRange = getTaskTimeRange(entry.task);
-        if (timeRange) {
-          const timeSpan = document.createElement('span');
-          timeSpan.textContent = timeRange;
-          meta.appendChild(timeSpan);
-        }
-
-        const durationValue = Number(entry.task.duration);
-        if (!Number.isNaN(durationValue) && durationValue > 0) {
-          const durationSpan = document.createElement('span');
-          const formatted = Number.isInteger(durationValue) ? `${durationValue}h` : `${durationValue.toFixed(1)}h`;
-          durationSpan.textContent = `Duration ${formatted}`;
-          meta.appendChild(durationSpan);
-        }
-
-        const category = getCategoryByName(entry.task.category);
-        if (category) {
-          const categorySpan = document.createElement('span');
-          const dot = document.createElement('span');
-          dot.className = 'mission-critical-item-dot';
-          dot.style.background = category.color;
-          categorySpan.appendChild(dot);
-          categorySpan.append(category.name);
-          meta.appendChild(categorySpan);
-        }
-
-        button.appendChild(meta);
-        missionCriticalContent.appendChild(button);
-      });
-    }
-
-    function positionMissionCriticalPanel(cell) {
-      if (!missionCriticalPanel || !calendarCardEl) return;
-      if (window.matchMedia('(max-width: 900px)').matches) {
-        missionCriticalPanel.style.top = '0px';
-        return;
-      }
-      const cardRect = calendarCardEl.getBoundingClientRect();
-      const cellRect = cell.getBoundingClientRect();
-      const offset = cellRect.top - cardRect.top;
-      missionCriticalPanel.style.top = `${Math.max(0, offset)}px`;
-    }
-
-    function showMissionCriticalPanel(dateKey, cell) {
-      if (!missionCriticalPanel) return;
-      const weekStartKey = getWeekStartKey(dateKey);
-      const entries = getMissionCriticalEntries(weekStartKey);
-      renderMissionCriticalPanel(entries, weekStartKey);
-      positionMissionCriticalPanel(cell);
-      missionCriticalPanel.classList.add('visible');
-      clearTimeout(missionPanelHideTimer);
-      missionPanelHideTimer = null;
-      activeHoverCell = cell;
-    }
-
-    function scheduleMissionCriticalPanelHide(event) {
-      if (!missionCriticalPanel) return;
-      const related = event?.relatedTarget;
-      if (related && (missionCriticalPanel.contains(related) || (activeHoverCell && activeHoverCell.contains(related)))) {
-        return;
-      }
-      clearTimeout(missionPanelHideTimer);
-      missionPanelHideTimer = setTimeout(() => {
-        hideMissionCriticalPanel();
-      }, 160);
-    }
-
-    function hideMissionCriticalPanel(force = false) {
-      if (!missionCriticalPanel) return;
-      missionCriticalPanel.classList.remove('visible');
-      clearTimeout(missionPanelHideTimer);
-      missionPanelHideTimer = null;
-      if (force) {
-        if (missionCriticalContent) missionCriticalContent.innerHTML = '';
-        if (missionCriticalWeekEl) missionCriticalWeekEl.textContent = '';
-      }
-      if (activeHoverCell && !activeHoverCell.matches(':hover')) {
-        activeHoverCell.classList.remove('show-flyout');
-      }
-      activeHoverCell = null;
-      activeMissionWeekStart = null;
-    }
-
-    function setupFlyoutHover(cell, flyout, dateKey) {
+    function setupFlyoutHover(cell, flyout) {
       if (!cell || !flyout) return;
       let hideTimeout;
 
       const show = () => {
         clearTimeout(hideTimeout);
         cell.classList.add('show-flyout');
-        showMissionCriticalPanel(dateKey, cell);
       };
 
       const hide = () => {
         cell.classList.remove('show-flyout');
-        if (activeHoverCell === cell) {
-          activeHoverCell = null;
-        }
       };
 
       const scheduleHide = (event) => {
         const related = event?.relatedTarget;
-        if (related && (cell.contains(related) || flyout.contains(related) || (missionCriticalPanel && missionCriticalPanel.contains(related)))) {
+        if (related && (cell.contains(related) || flyout.contains(related))) {
           return;
         }
         clearTimeout(hideTimeout);
-        hideTimeout = setTimeout(() => hide(), 140);
-        scheduleMissionCriticalPanelHide(event);
+        hideTimeout = setTimeout(hide, 140);
       };
 
       cell.addEventListener('mouseenter', show);
@@ -2038,7 +1743,6 @@
 
     function renderCalendar() {
       clearDragState();
-      hideMissionCriticalPanel(true);
       if (!calendarGridEl) return;
 
       calendarGridEl.innerHTML = '';
@@ -2223,6 +1927,7 @@
 
             if (task.missionCritical) {
               taskCard.classList.add('mission-critical');
+              previewBar.classList.add('mission-critical');
             }
 
             taskCard.addEventListener('dragstart', (event) => {
@@ -2341,7 +2046,7 @@
           }
 
           monthGrid.appendChild(cell);
-          setupFlyoutHover(cell, flyout, dateKey);
+          setupFlyoutHover(cell, flyout);
         }
 
         calendarGridEl.appendChild(monthBlock);
@@ -2433,40 +2138,6 @@
       });
     }
 
-    if (missionCriticalPanel) {
-      missionCriticalPanel.addEventListener('mouseenter', () => {
-        clearTimeout(missionPanelHideTimer);
-        missionPanelHideTimer = null;
-        if (activeHoverCell) {
-          activeHoverCell.classList.add('show-flyout');
-        }
-      });
-
-      missionCriticalPanel.addEventListener('mouseleave', (event) => {
-        scheduleMissionCriticalPanelHide(event);
-      });
-    }
-
-    if (missionCriticalContent) {
-      missionCriticalContent.addEventListener('click', (event) => {
-        const target = event.target.closest('.mission-critical-item');
-        if (!target) return;
-        const dateKey = target.dataset.date;
-        const taskId = Number(target.dataset.taskId);
-        const tasks = state.tasks[dateKey] || [];
-        const task = tasks.find((item) => item.id === taskId);
-        if (task) {
-          openTaskModal(dateKey, task);
-          hideMissionCriticalPanel();
-        }
-      });
-    }
-
-    window.addEventListener('resize', () => {
-      if (missionCriticalPanel && missionCriticalPanel.classList.contains('visible') && activeHoverCell) {
-        positionMissionCriticalPanel(activeHoverCell);
-      }
-    });
     focusCancelBtn.addEventListener('click', closeFocusModal);
 
     taskModalBackdrop.addEventListener('click', (event) => {
