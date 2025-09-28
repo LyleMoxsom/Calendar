@@ -401,6 +401,65 @@
       pointer-events: none;
     }
 
+    .time-field {
+      position: relative;
+    }
+
+    .time-field-display {
+      width: 100%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 16px;
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text);
+      font: inherit;
+      font-size: 16px;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .time-field-display:hover,
+    .time-field-display:focus-visible {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.2);
+      box-shadow: 0 24px 44px rgba(0, 0, 0, 0.35);
+      outline: none;
+    }
+
+    .time-field-display::after {
+      content: '▾';
+      font-size: 12px;
+      opacity: 0.7;
+    }
+
+    .time-field-panel {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: calc(100% + 10px);
+      padding: 8px;
+      border-radius: var(--radius-md);
+      background: rgba(21, 21, 31, 0.96);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: 0 28px 52px rgba(0, 0, 0, 0.5);
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(-8px);
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      z-index: 40;
+    }
+
+    .time-field-panel.open {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0);
+    }
+
     .time-picker {
       position: relative;
       display: grid;
@@ -520,6 +579,17 @@
       z-index: 1;
     }
 
+    .day::before {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      border-radius: inherit;
+      background: radial-gradient(circle, rgba(106, 90, 205, 0.28), transparent 70%);
+      opacity: 0;
+      pointer-events: none;
+      transform: scale(0.92);
+    }
+
     .day::after {
       content: '';
       position: absolute;
@@ -529,6 +599,30 @@
       opacity: 0;
       transition: opacity 0.35s ease, box-shadow 0.35s ease;
       pointer-events: none;
+    }
+
+    @keyframes day-pulse {
+      0% {
+        opacity: 0.85;
+        transform: scale(0.9);
+      }
+      55% {
+        opacity: 0.35;
+        transform: scale(1.12);
+      }
+      100% {
+        opacity: 0;
+        transform: scale(1.28);
+      }
+    }
+
+    .day.highlight-pulse {
+      z-index: 7;
+    }
+
+    .day.highlight-pulse::before {
+      opacity: 1;
+      animation: day-pulse 1.1s ease-out;
     }
 
     .day:is(:hover, .drag-over, .show-flyout) {
@@ -1010,6 +1104,15 @@
       font-family: inherit;
     }
 
+    #task-category,
+    #task-category option {
+      color: #ffffff;
+    }
+
+    #task-category option {
+      background-color: rgba(21, 21, 31, 0.96);
+    }
+
     .field textarea {
       min-height: 80px;
       resize: vertical;
@@ -1210,13 +1313,24 @@
           <input type="hidden" id="new-category-color" name="newCategoryColor">
         </div>
         <div class="field">
-          <label>Start time</label>
-          <div class="time-picker" id="task-start-picker" role="listbox" tabindex="0" aria-label="Start time"></div>
+          <label for="task-start-display">Start time</label>
+          <div class="time-field" id="task-start-field">
+            <button type="button" class="time-field-display" id="task-start-display" aria-haspopup="listbox" aria-expanded="false" aria-controls="task-start-picker">No start time</button>
+            <div class="time-field-panel" id="task-start-panel" hidden>
+              <div class="time-picker" id="task-start-picker" role="listbox" aria-label="Start time" tabindex="-1"></div>
+            </div>
+          </div>
           <input type="hidden" id="task-start" name="start">
         </div>
         <div class="field">
-          <label for="task-duration">Time allocation</label>
-          <select id="task-duration" name="duration"></select>
+          <label for="task-duration-display">Time allocation</label>
+          <div class="time-field" id="task-duration-field">
+            <button type="button" class="time-field-display" id="task-duration-display" aria-haspopup="listbox" aria-expanded="false" aria-controls="task-duration-picker">No duration</button>
+            <div class="time-field-panel" id="task-duration-panel" hidden>
+              <div class="time-picker" id="task-duration-picker" role="listbox" aria-label="Time allocation" tabindex="-1"></div>
+            </div>
+          </div>
+          <input type="hidden" id="task-duration" name="duration">
         </div>
         <div class="checkbox-row">
           <label class="checkbox-control">
@@ -1493,144 +1607,211 @@
       return parts.length ? parts.join(' ') : '0m';
     }
 
-    function createTimeOption(value, label) {
-      const option = document.createElement('button');
-      option.type = 'button';
-      option.className = 'time-option';
-      option.dataset.value = value;
-      option.textContent = label;
-      option.setAttribute('role', 'option');
-      option.setAttribute('aria-selected', 'false');
-      option.addEventListener('click', () => {
-        setTimePickerSelection(value, { scrollIntoView: true, focusOption: true });
-      });
-      option.addEventListener('keydown', (event) => {
-        if (event.key === 'Enter' || event.key === ' ') {
-          event.preventDefault();
-          setTimePickerSelection(value, { scrollIntoView: true, focusOption: true });
-        }
-      });
-      return option;
-    }
+    function createRollingPicker({
+      pickerEl,
+      displayEl,
+      panelEl,
+      hiddenInput,
+      placeholder,
+      options = [],
+      defaultFocusValue = ''
+    }) {
+      if (!pickerEl || !displayEl || !panelEl || !hiddenInput) return null;
 
-    function getTimeOptions() {
-      if (!taskStartPicker) return [];
-      return Array.from(taskStartPicker.querySelectorAll('.time-option'));
-    }
+      const normalizedOptions = options.map(({ value, label }) => ({
+        value: value == null ? '' : String(value),
+        label
+      }));
+      const optionMap = new Map();
+      let isOpen = false;
 
-    function setTimePickerSelection(value, { scrollIntoView = false, focusOption = false } = {}) {
-      if (!taskStartPicker || !taskStartInput) return;
-      const normalized = value || '';
-      taskStartInput.value = normalized;
-      let targetOption = null;
-      getTimeOptions().forEach((option) => {
-        const isMatch = option.dataset.value === normalized;
-        option.classList.toggle('selected', isMatch);
-        option.setAttribute('aria-selected', isMatch ? 'true' : 'false');
-        if (isMatch) {
-          targetOption = option;
-        }
-      });
-      if (scrollIntoView && targetOption) {
-        targetOption.scrollIntoView({ block: 'center', behavior: 'smooth' });
-      }
-      if (focusOption && targetOption) {
-        targetOption.focus();
-      }
-    }
-
-    function ensureStartTimeOption(value) {
-      if (!taskStartPicker || !value) return;
-      let option = taskStartPicker.querySelector(`.time-option[data-value="${value}"]`);
-      if (!option) {
-        option = createTimeOption(value, value);
-        option.dataset.custom = 'true';
-        taskStartPicker.appendChild(option);
-      }
-      return option;
-    }
-
-    function ensureDurationOption(value) {
-      if (!taskDurationInput || value == null || value === '') return;
-      const normalized = String(value);
-      const exists = Array.from(taskDurationInput.options).some((option) => option.value === normalized);
-      if (!exists) {
-        const option = document.createElement('option');
-        option.value = normalized;
-        option.textContent = formatDuration(value);
-        option.dataset.custom = 'true';
-        taskDurationInput.appendChild(option);
-      }
-    }
-
-    function handleTimePickerContainerFocus(event) {
-      if (event.target !== taskStartPicker) return;
-      const selected = taskStartPicker.querySelector('.time-option.selected');
-      if (selected) {
-        selected.focus();
-      } else {
-        const first = taskStartPicker.querySelector('.time-option');
-        first?.focus();
-      }
-    }
-
-    function handleTimePickerKeydown(event) {
-      const options = getTimeOptions();
-      if (!options.length) return;
-      const currentValue = taskStartInput?.value || '';
-      let index = options.findIndex((option) => option.dataset.value === currentValue);
-      if (index === -1) index = 0;
-      if (event.key === 'ArrowDown') {
-        event.preventDefault();
-        index = Math.min(options.length - 1, index + 1);
-        const next = options[index];
-        setTimePickerSelection(next.dataset.value, { scrollIntoView: true, focusOption: true });
-      } else if (event.key === 'ArrowUp') {
-        event.preventDefault();
-        index = Math.max(0, index - 1);
-        const next = options[index];
-        setTimePickerSelection(next.dataset.value, { scrollIntoView: true, focusOption: true });
-      } else if (event.key === 'Home') {
-        event.preventDefault();
-        const next = options[0];
-        setTimePickerSelection(next.dataset.value, { scrollIntoView: true, focusOption: true });
-      } else if (event.key === 'End') {
-        event.preventDefault();
-        const next = options[options.length - 1];
-        setTimePickerSelection(next.dataset.value, { scrollIntoView: true, focusOption: true });
-      }
-    }
-
-    function buildStartTimePicker() {
-      if (!taskStartPicker) return;
-      const wasInitialised = taskStartPicker.dataset.initialized === 'true';
-      taskStartPicker.innerHTML = '';
-      const emptyOption = createTimeOption('', 'No start time');
-      taskStartPicker.appendChild(emptyOption);
-      startTimeOptions.forEach((time) => {
-        taskStartPicker.appendChild(createTimeOption(time, time));
-      });
-      if (!wasInitialised) {
-        taskStartPicker.addEventListener('focus', handleTimePickerContainerFocus);
-        taskStartPicker.addEventListener('keydown', handleTimePickerKeydown);
-        taskStartPicker.dataset.initialized = 'true';
-      }
-      setTimePickerSelection(taskStartInput?.value || '', { scrollIntoView: false });
-    }
-
-    function populateDurationSelect() {
-      if (!taskDurationInput) return;
-      taskDurationInput.innerHTML = '';
-      const empty = document.createElement('option');
-      empty.value = '';
-      empty.textContent = 'No duration';
-      taskDurationInput.appendChild(empty);
-      durationOptions.forEach(({ value, label }) => {
-        const option = document.createElement('option');
-        option.value = String(value);
+      function addOption(value, label, { custom = false } = {}) {
+        const option = document.createElement('button');
+        option.type = 'button';
+        option.className = 'time-option';
+        option.dataset.value = value;
+        option.dataset.label = label;
+        if (custom) option.dataset.custom = 'true';
         option.textContent = label;
-        taskDurationInput.appendChild(option);
+        option.setAttribute('role', 'option');
+        option.setAttribute('aria-selected', 'false');
+        option.addEventListener('click', () => {
+          setValue(value);
+          close({ focus: false });
+        });
+        option.addEventListener('keydown', (event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            setValue(value);
+            close();
+          }
+        });
+        pickerEl.appendChild(option);
+        optionMap.set(value, option);
+        return option;
+      }
+
+      function updateDisplay(normalized) {
+        const option = optionMap.get(normalized);
+        const label = option?.dataset.label || placeholder;
+        displayEl.textContent = normalized ? label : placeholder;
+        displayEl.dataset.value = normalized;
+      }
+
+      function ensureOption(value, label) {
+        const normalized = value == null ? '' : String(value);
+        if (optionMap.has(normalized)) return optionMap.get(normalized);
+        return addOption(normalized, label ?? normalized, { custom: true });
+      }
+
+      function setValue(value, { scrollIntoView = false, focusOption = false } = {}) {
+        const normalized = value == null ? '' : String(value);
+        if (normalized && !optionMap.has(normalized)) {
+          ensureOption(normalized, normalized);
+        }
+        hiddenInput.value = normalized;
+        let target = null;
+        optionMap.forEach((option, key) => {
+          const isMatch = key === normalized;
+          option.classList.toggle('selected', isMatch);
+          option.setAttribute('aria-selected', isMatch ? 'true' : 'false');
+          if (isMatch) target = option;
+        });
+        updateDisplay(normalized);
+        if (scrollIntoView && target) {
+          target.scrollIntoView({ block: 'center' });
+        }
+        if (focusOption && target) {
+          target.focus({ preventScroll: true });
+        }
+        return target;
+      }
+
+      function handlePickerKeydown(event) {
+        const options = Array.from(pickerEl.querySelectorAll('.time-option'));
+        if (!options.length) return;
+        let index = options.indexOf(document.activeElement);
+        if (index === -1) {
+          index = options.findIndex((option) => option.dataset.value === (hiddenInput.value || ''));
+          if (index === -1) index = 0;
+        }
+        if (event.key === 'ArrowDown') {
+          event.preventDefault();
+          index = Math.min(options.length - 1, index + 1);
+          const next = options[index];
+          setValue(next.dataset.value, { scrollIntoView: true, focusOption: true });
+        } else if (event.key === 'ArrowUp') {
+          event.preventDefault();
+          index = Math.max(0, index - 1);
+          const next = options[index];
+          setValue(next.dataset.value, { scrollIntoView: true, focusOption: true });
+        } else if (event.key === 'Home') {
+          event.preventDefault();
+          const next = options[0];
+          setValue(next.dataset.value, { scrollIntoView: true, focusOption: true });
+        } else if (event.key === 'End') {
+          event.preventDefault();
+          const next = options[options.length - 1];
+          setValue(next.dataset.value, { scrollIntoView: true, focusOption: true });
+        }
+      }
+
+      function handleOutsidePointer(event) {
+        if (panelEl.contains(event.target) || event.target === displayEl) return;
+        close({ focus: false });
+      }
+
+      function handleGlobalKeydown(event) {
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          close();
+        }
+      }
+
+      function open({ focus = true } = {}) {
+        if (isOpen) return;
+        isOpen = true;
+        panelEl.hidden = false;
+        requestAnimationFrame(() => {
+          panelEl.classList.add('open');
+        });
+        displayEl.setAttribute('aria-expanded', 'true');
+        const currentValue = hiddenInput.value || '';
+        let focusTarget = optionMap.get(currentValue);
+        if (!focusTarget && !currentValue && defaultFocusValue && optionMap.has(defaultFocusValue)) {
+          focusTarget = optionMap.get(defaultFocusValue);
+        }
+        if (!focusTarget) {
+          focusTarget = pickerEl.querySelector('.time-option');
+        }
+        if (focusTarget) {
+          focusTarget.focus({ preventScroll: true });
+          focusTarget.scrollIntoView({ block: 'center' });
+        }
+        document.addEventListener('pointerdown', handleOutsidePointer, true);
+        document.addEventListener('keydown', handleGlobalKeydown, true);
+      }
+
+      function close({ focus = true } = {}) {
+        if (!isOpen) return;
+        isOpen = false;
+        panelEl.classList.remove('open');
+        displayEl.setAttribute('aria-expanded', 'false');
+        const finalize = () => {
+          panelEl.hidden = true;
+          panelEl.removeEventListener('transitionend', finalize);
+        };
+        panelEl.addEventListener('transitionend', finalize);
+        document.removeEventListener('pointerdown', handleOutsidePointer, true);
+        document.removeEventListener('keydown', handleGlobalKeydown, true);
+        if (focus) {
+          displayEl.focus();
+        }
+      }
+
+      function toggle() {
+        if (isOpen) {
+          close({ focus: false });
+        } else {
+          open();
+        }
+      }
+
+      function rebuild() {
+        pickerEl.innerHTML = '';
+        optionMap.clear();
+        normalizedOptions.forEach(({ value, label }) => addOption(value, label));
+        const initialValue = hiddenInput.value || '';
+        if (initialValue && !optionMap.has(initialValue)) {
+          addOption(initialValue, initialValue, { custom: true });
+        }
+        setValue(initialValue, { scrollIntoView: false, focusOption: false });
+      }
+
+      pickerEl.addEventListener('keydown', handlePickerKeydown);
+      displayEl.addEventListener('click', (event) => {
+        event.preventDefault();
+        toggle();
       });
+      displayEl.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ' ' || event.key === 'ArrowDown') {
+          event.preventDefault();
+          open();
+        } else if (event.key === 'Escape') {
+          event.preventDefault();
+          close();
+        }
+      });
+
+      rebuild();
+
+      return {
+        setValue,
+        ensureOption,
+        open,
+        close,
+        rebuild
+      };
     }
 
     function compareTasks(a, b) {
@@ -1684,7 +1865,12 @@
     const missionCriticalInput = document.getElementById('task-mission-critical');
     const taskTitleInput = document.getElementById('task-title');
     const taskStartPicker = document.getElementById('task-start-picker');
+    const taskStartDisplay = document.getElementById('task-start-display');
+    const taskStartPanel = document.getElementById('task-start-panel');
     const taskStartInput = document.getElementById('task-start');
+    const taskDurationPicker = document.getElementById('task-duration-picker');
+    const taskDurationDisplay = document.getElementById('task-duration-display');
+    const taskDurationPanel = document.getElementById('task-duration-panel');
     const taskDurationInput = document.getElementById('task-duration');
     const taskNotesInput = document.getElementById('task-notes');
     const categoryPreviewEl = document.getElementById('category-preview');
@@ -1740,8 +1926,25 @@
       miniTooltipVisible = true;
     }
 
-    buildStartTimePicker();
-    populateDurationSelect();
+    const startPickerController = createRollingPicker({
+      pickerEl: taskStartPicker,
+      displayEl: taskStartDisplay,
+      panelEl: taskStartPanel,
+      hiddenInput: taskStartInput,
+      placeholder: 'No start time',
+      options: [{ value: '', label: 'No start time' }, ...startTimeOptions.map((time) => ({ value: time, label: time }))],
+      defaultFocusValue: '12:00'
+    });
+
+    const durationPickerController = createRollingPicker({
+      pickerEl: taskDurationPicker,
+      displayEl: taskDurationDisplay,
+      panelEl: taskDurationPanel,
+      hiddenInput: taskDurationInput,
+      placeholder: 'No duration',
+      options: [{ value: '', label: 'No duration' }, ...durationOptions.map(({ value, label }) => ({ value: String(value), label }))],
+      defaultFocusValue: '60'
+    });
 
     renderCategoryColorOptions();
     selectCategoryColor(categoryPalette[0]);
@@ -1749,6 +1952,7 @@
     let state = loadState();
     ensureGeneralCategoryExists();
     let viewDate = new Date();
+    viewDate = new Date(viewDate.getFullYear(), viewDate.getMonth(), 1);
 
     let editingTask = null;
     let editingDate = null;
@@ -1758,6 +1962,7 @@
     let focusSelectionPointerId = null;
     let initialScrollCompleted = false;
     let initialMiniScrollCompleted = false;
+    const dayHighlightTimers = new Map();
 
     function detachFocusPointerListeners() {
       window.removeEventListener('pointerup', handleFocusPointerUp);
@@ -2024,16 +2229,25 @@
       missionCriticalInput.checked = Boolean(task?.missionCritical);
       taskTitleInput.value = task?.title || '';
       const startValue = task?.start || '';
-      if (startValue) {
-        ensureStartTimeOption(startValue);
+      if (startPickerController) {
+        if (startValue) {
+          startPickerController.ensureOption(startValue, startValue);
+        }
+        startPickerController.setValue(startValue, { scrollIntoView: Boolean(startValue) });
+      } else if (taskStartInput) {
+        taskStartInput.value = startValue;
       }
-      setTimePickerSelection(startValue, { scrollIntoView: Boolean(startValue) });
+
       const durationValue = typeof task?.duration === 'number' && task.duration > 0 ? task.duration : '';
-      if (durationValue !== '') {
-        ensureDurationOption(durationValue);
-        taskDurationInput.value = String(durationValue);
-      } else {
-        taskDurationInput.value = '';
+      if (durationPickerController) {
+        if (durationValue !== '') {
+          durationPickerController.ensureOption(durationValue, formatDuration(durationValue));
+        }
+        durationPickerController.setValue(durationValue === '' ? '' : durationValue, {
+          scrollIntoView: durationValue !== ''
+        });
+      } else if (taskDurationInput) {
+        taskDurationInput.value = durationValue === '' ? '' : String(durationValue);
       }
       taskNotesInput.value = task?.notes || '';
       newCategoryNameInput.value = '';
@@ -2056,6 +2270,8 @@
       draggedTask = null;
       missionCriticalInput.checked = false;
       toggleNewCategoryFields(false);
+      startPickerController?.close({ focus: false });
+      durationPickerController?.close({ focus: false });
     }
 
     function openFocusModal(project, options = {}) {
@@ -2221,7 +2437,7 @@
           if (activeProjects.length) {
             const stack = document.createElement('div');
             stack.className = 'mini-focus-stack';
-            activeProjects.forEach((project) => {
+            activeProjects.forEach((project, projectIndex) => {
               const block = document.createElement('button');
               block.type = 'button';
               block.className = 'mini-focus-block';
@@ -2230,15 +2446,11 @@
               block.style.setProperty('--mini-focus-border', hexToRgba(project.color, 0.6));
               block.title = project.name;
               block.setAttribute('aria-label', project.name);
-              block.addEventListener('click', (event) => {
-                event.stopPropagation();
-                if (event.shiftKey) return;
-                hideMiniTooltip();
-                openFocusModal(project);
-              });
+              block.dataset.projectIndex = String(projectIndex);
               block.addEventListener('keydown', (event) => {
                 if (event.key === 'Enter' || event.key === ' ') {
                   event.preventDefault();
+                  event.stopPropagation();
                   hideMiniTooltip();
                   openFocusModal(project);
                 }
@@ -2266,20 +2478,27 @@
 
           cell.addEventListener('click', (event) => {
             if (cell.classList.contains('empty')) return;
-            if (event.target.closest('.mini-focus-block')) return;
             if (event.detail > 1) return;
             event.preventDefault();
             scrollMainCalendarToMonth(year, month, { smooth: true });
             hideMiniTooltip();
+            flashMainCalendarDay(dateKey, { delay: 420 });
           });
 
           cell.addEventListener('dblclick', (event) => {
             if (cell.classList.contains('empty')) return;
-            if (event.target.closest('.mini-focus-block')) return;
             event.preventDefault();
             scrollMainCalendarToMonth(year, month, { smooth: false });
             hideMiniTooltip();
-            const projectToEdit = activeProjects[0] || null;
+            flashMainCalendarDay(dateKey);
+            let projectToEdit = activeProjects[0] || null;
+            const blockTarget = event.target.closest('.mini-focus-block');
+            if (blockTarget) {
+              const index = Number(blockTarget.dataset.projectIndex);
+              if (!Number.isNaN(index) && activeProjects[index]) {
+                projectToEdit = activeProjects[index];
+              }
+            }
             if (projectToEdit) {
               openFocusModal(projectToEdit);
             } else {
@@ -2353,6 +2572,29 @@
       if (target) {
         initialScrollCompleted = true;
         target.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto', block: 'start' });
+      }
+    }
+
+    function flashMainCalendarDay(dateKey, { delay = 0 } = {}) {
+      if (!calendarGridEl || !dateKey) return;
+      const trigger = () => {
+        const dayEl = calendarGridEl.querySelector(`.day[data-date="${dateKey}"]`);
+        if (!dayEl) return;
+        dayEl.classList.add('highlight-pulse');
+        const existing = dayHighlightTimers.get(dateKey);
+        if (existing) {
+          clearTimeout(existing);
+        }
+        const timeout = setTimeout(() => {
+          dayEl.classList.remove('highlight-pulse');
+          dayHighlightTimers.delete(dateKey);
+        }, 1300);
+        dayHighlightTimers.set(dateKey, timeout);
+      };
+      if (delay > 0) {
+        setTimeout(trigger, delay);
+      } else {
+        trigger();
       }
     }
 
@@ -2489,12 +2731,13 @@
 
           cell.appendChild(header);
 
+          const activeProjects = state.projects.filter((project) => project.start <= dateKey && project.end >= dateKey);
+          const focusTooltipText = activeProjects.map((project) => project.name).join('\n');
+
           const overlayStack = document.createElement('div');
           overlayStack.className = 'focus-overlay-stack';
           const focusBadges = document.createElement('div');
           focusBadges.className = 'focus-badges';
-
-          const activeProjects = state.projects.filter((project) => project.start <= dateKey && project.end >= dateKey);
           activeProjects.forEach((project) => {
             const overlay = document.createElement('div');
             overlay.className = 'focus-overlay';
@@ -2513,11 +2756,13 @@
             badge.appendChild(label);
             badge.addEventListener('click', (event) => {
               event.stopPropagation();
+              hideMiniTooltip();
               openFocusModal(project);
             });
             badge.addEventListener('keydown', (event) => {
               if (event.key === 'Enter' || event.key === ' ') {
                 event.preventDefault();
+                hideMiniTooltip();
                 openFocusModal(project);
               }
             });
@@ -2529,6 +2774,17 @@
           }
 
           cell.appendChild(overlayStack);
+
+          if (focusTooltipText) {
+            cell.addEventListener('mouseenter', (event) => {
+              showMiniTooltip(focusTooltipText, event.clientX, event.clientY);
+            });
+            cell.addEventListener('mousemove', (event) => {
+              updateMiniTooltipPosition(event.clientX, event.clientY);
+            });
+          }
+
+          cell.addEventListener('mouseleave', hideMiniTooltip);
 
           const tasks = (state.tasks[dateKey] || []).slice().sort(compareTasks);
           const hasTasks = tasks.length > 0;
@@ -2670,9 +2926,8 @@
               flyout.appendChild(focusBadges);
             }
             flyout.appendChild(taskList);
+            flyout.addEventListener('mouseenter', hideMiniTooltip);
             cell.appendChild(flyout);
-          } else if (activeProjects.length > 0) {
-            cell.appendChild(focusBadges);
           }
 
           if (realTodayKey === dateKey) {
@@ -2733,7 +2988,8 @@
     }
 
     document.getElementById('reset-calendar').addEventListener('click', () => {
-      viewDate = new Date();
+      const now = new Date();
+      viewDate = new Date(now.getFullYear(), now.getMonth(), 1);
       initialScrollCompleted = false;
       initialMiniScrollCompleted = false;
       renderCalendar();
