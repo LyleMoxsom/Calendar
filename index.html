@@ -285,6 +285,11 @@
       color: rgba(255, 255, 255, 0.7);
       overflow: hidden;
       isolation: isolate;
+      user-select: none;
+    }
+
+    .mini-day:not(.empty) {
+      cursor: pointer;
     }
 
     .mini-day-number {
@@ -379,18 +384,7 @@
     }
 
     .month-divider::before {
-      content: '';
-      position: absolute;
-      left: -36px;
-      right: -36px;
-      bottom: 10px;
-      height: 2px;
-      background: rgba(255, 255, 255, 0.85);
-      box-shadow: 0 0 18px rgba(255, 255, 255, 0.55);
-    }
-
-    .month-block:first-of-type .month-divider::before {
-      box-shadow: 0 0 14px rgba(255, 255, 255, 0.35);
+      display: none;
     }
 
     .month-label {
@@ -606,9 +600,9 @@
 
     .task-flyout {
       position: absolute;
-      top: calc(100% + 12px);
+      top: 100%;
       left: 50%;
-      transform: translate(-50%, -12px);
+      transform: translate(-50%, 12px);
       width: clamp(260px, 32vw, 360px);
       max-height: clamp(220px, 52vh, 480px);
       padding: 20px;
@@ -1156,11 +1150,11 @@
         </div>
         <div class="field">
           <label for="task-start">Start time</label>
-          <input type="time" id="task-start" name="start" placeholder="09:00" step="900">
+          <select id="task-start" name="start"></select>
         </div>
         <div class="field">
-          <label for="task-duration">Time allocation (hours)</label>
-          <input type="number" min="0" step="0.5" id="task-duration" name="duration" placeholder="2">
+          <label for="task-duration">Time allocation</label>
+          <select id="task-duration" name="duration"></select>
         </div>
         <div class="checkbox-row">
           <label class="checkbox-control">
@@ -1226,6 +1220,24 @@
       '#F45D01',
       '#FF5F7E',
       '#50B5FF'
+    ];
+
+    const startTimeOptions = Array.from({ length: (24 * 60) / 15 }, (_, index) => {
+      const totalMinutes = index * 15;
+      const hours = Math.floor(totalMinutes / 60);
+      const minutes = totalMinutes % 60;
+      return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+    });
+
+    const durationOptions = [
+      { value: 5, label: '5 minutes' },
+      { value: 15, label: '15 minutes' },
+      { value: 30, label: '30 minutes' },
+      { value: 60, label: '1 hour' },
+      { value: 120, label: '2 hours' },
+      { value: 180, label: '3 hours' },
+      { value: 240, label: '4 hours' },
+      { value: 300, label: '5 hours' }
     ];
 
     function defaultCategories() {
@@ -1352,7 +1364,7 @@
           if (task.duration !== undefined && task.duration !== null && task.duration !== '') {
             const numericDuration = Number(task.duration);
             if (!Number.isNaN(numericDuration) && numericDuration >= 0) {
-              task.duration = numericDuration;
+              task.duration = numericDuration > 24 ? Math.round(numericDuration) : Math.round(numericDuration * 60);
             } else {
               delete task.duration;
             }
@@ -1403,6 +1415,75 @@
 
     function formatTime(date) {
       return date.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function formatDuration(minutes) {
+      const total = Math.max(0, Math.round(Number(minutes) || 0));
+      const hours = Math.floor(total / 60);
+      const mins = total % 60;
+      const parts = [];
+      if (hours > 0) {
+        parts.push(`${hours}h`);
+      }
+      if (mins > 0) {
+        parts.push(`${mins}m`);
+      }
+      return parts.length ? parts.join(' ') : '0m';
+    }
+
+    function ensureStartTimeOption(value) {
+      if (!taskStartInput || !value) return;
+      const exists = Array.from(taskStartInput.options).some((option) => option.value === value);
+      if (!exists) {
+        const option = document.createElement('option');
+        option.value = value;
+        option.textContent = value;
+        option.dataset.custom = 'true';
+        taskStartInput.appendChild(option);
+      }
+    }
+
+    function ensureDurationOption(value) {
+      if (!taskDurationInput || value == null || value === '') return;
+      const normalized = String(value);
+      const exists = Array.from(taskDurationInput.options).some((option) => option.value === normalized);
+      if (!exists) {
+        const option = document.createElement('option');
+        option.value = normalized;
+        option.textContent = formatDuration(value);
+        option.dataset.custom = 'true';
+        taskDurationInput.appendChild(option);
+      }
+    }
+
+    function populateStartTimeSelect() {
+      if (!taskStartInput) return;
+      taskStartInput.innerHTML = '';
+      const empty = document.createElement('option');
+      empty.value = '';
+      empty.textContent = 'No start time';
+      taskStartInput.appendChild(empty);
+      startTimeOptions.forEach((time) => {
+        const option = document.createElement('option');
+        option.value = time;
+        option.textContent = time;
+        taskStartInput.appendChild(option);
+      });
+    }
+
+    function populateDurationSelect() {
+      if (!taskDurationInput) return;
+      taskDurationInput.innerHTML = '';
+      const empty = document.createElement('option');
+      empty.value = '';
+      empty.textContent = 'No duration';
+      taskDurationInput.appendChild(empty);
+      durationOptions.forEach(({ value, label }) => {
+        const option = document.createElement('option');
+        option.value = String(value);
+        option.textContent = label;
+        taskDurationInput.appendChild(option);
+      });
     }
 
     function compareTasks(a, b) {
@@ -1516,7 +1597,8 @@
       const rgb = hexToRgb(hex);
       if (!rgb) return '#6A5ACD';
       const { h, s, l } = rgbToHsl(rgb.r, rgb.g, rgb.b);
-      const hours = Number(duration) || 0;
+      const minutes = Math.max(0, Number(duration) || 0);
+      const hours = minutes / 60;
       const normalized = clamp(hours / 6, 0, 1);
       const darkening = normalized * 0.3;
       const lightenBoost = hours === 0 ? 0.12 : 0;
@@ -1560,6 +1642,9 @@
     const focusDeleteBtn = document.getElementById('focus-delete');
     const focusCancelBtn = document.getElementById('focus-cancel');
 
+    populateStartTimeSelect();
+    populateDurationSelect();
+
     renderCategoryColorOptions();
     selectCategoryColor(categoryPalette[0]);
 
@@ -1574,6 +1659,7 @@
     let focusSelection = null;
     let focusSelectionPointerId = null;
     let initialScrollCompleted = false;
+    let initialMiniScrollCompleted = false;
 
     function detachFocusPointerListeners() {
       window.removeEventListener('pointerup', handleFocusPointerUp);
@@ -1839,8 +1925,18 @@
       taskForm.reset();
       missionCriticalInput.checked = Boolean(task?.missionCritical);
       taskTitleInput.value = task?.title || '';
-      taskStartInput.value = task?.start || '';
-      taskDurationInput.value = task?.duration ?? '';
+      const startValue = task?.start || '';
+      if (startValue) {
+        ensureStartTimeOption(startValue);
+      }
+      taskStartInput.value = startValue;
+      const durationValue = typeof task?.duration === 'number' && task.duration > 0 ? task.duration : '';
+      if (durationValue !== '') {
+        ensureDurationOption(durationValue);
+        taskDurationInput.value = String(durationValue);
+      } else {
+        taskDurationInput.value = '';
+      }
       taskNotesInput.value = task?.notes || '';
       newCategoryNameInput.value = '';
       newCategoryColorInput.value = '';
@@ -1969,6 +2065,8 @@
       months.forEach(({ year, month }) => {
         const container = document.createElement('div');
         container.className = 'mini-month';
+        container.dataset.year = String(year);
+        container.dataset.month = String(month);
 
         const header = document.createElement('div');
         header.className = 'mini-month-header';
@@ -2022,6 +2120,7 @@
 
           const activeProjects = state.projects.filter((project) => project.start <= dateKey && project.end >= dateKey);
           if (activeProjects.length) {
+            cell.title = activeProjects.map((project) => project.name).join('\n');
             const stack = document.createElement('div');
             stack.className = 'mini-focus-stack';
             activeProjects.forEach((project) => {
@@ -2049,6 +2148,26 @@
             cell.appendChild(stack);
           }
 
+          if (!activeProjects.length) {
+            cell.removeAttribute('title');
+          }
+
+          cell.addEventListener('click', (event) => {
+            if (cell.classList.contains('empty')) return;
+            if (event.target.closest('.mini-focus-block')) return;
+            if (event.detail > 1) return;
+            event.preventDefault();
+            scrollMainCalendarToMonth(year, month, { smooth: true });
+            openFocusModal(null, { start: dateKey, end: dateKey });
+          });
+
+          cell.addEventListener('dblclick', (event) => {
+            if (cell.classList.contains('empty')) return;
+            if (event.target.closest('.mini-focus-block')) return;
+            event.preventDefault();
+            scrollMainCalendarToMonth(year, month, { smooth: false });
+          });
+
           cell.addEventListener('pointerdown', (event) => {
             if (event.button !== 0 || !event.shiftKey) return;
             event.preventDefault();
@@ -2066,6 +2185,11 @@
 
         yearViewEl.appendChild(container);
       });
+
+      if (!initialMiniScrollCompleted) {
+        scrollMiniViewToMonth(viewDate, { smooth: false });
+        initialMiniScrollCompleted = true;
+      }
     }
 
     function getTaskTimeRange(task) {
@@ -2103,6 +2227,25 @@
       flyout.addEventListener('mouseleave', scheduleHide);
     }
 
+    function scrollMainCalendarToMonth(year, month, { smooth = true } = {}) {
+      if (!calendarGridEl) return;
+      const selector = `.month-block[data-year="${year}"][data-month="${month}"]`;
+      const target = calendarGridEl.querySelector(selector);
+      if (target) {
+        initialScrollCompleted = true;
+        target.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto', block: 'start' });
+      }
+    }
+
+    function scrollMiniViewToMonth(date, { smooth = true } = {}) {
+      if (!yearViewEl || !date) return;
+      const selector = `.mini-month[data-year="${date.getFullYear()}"][data-month="${date.getMonth()}"]`;
+      const target = yearViewEl.querySelector(selector);
+      if (target) {
+        target.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto', block: 'start' });
+      }
+    }
+
     function scrollToToday({ smooth = true } = {}) {
       if (!calendarGridEl) return;
       const todayCell = calendarGridEl.querySelector('.day.today');
@@ -2121,6 +2264,8 @@
       months.forEach(({ year, month }) => {
         const monthBlock = document.createElement('div');
         monthBlock.className = 'month-block';
+        monthBlock.dataset.year = String(year);
+        monthBlock.dataset.month = String(month);
 
         const labelDate = new Date(year, month, 1);
         const labelText = labelDate.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
@@ -2284,7 +2429,8 @@
 
             const category = getCategoryByName(task.category) || ensureGeneralCategoryExists();
             const baseColor = category?.color || '#6A5ACD';
-            const shadeColor = shadeColorByDuration(baseColor, task.duration);
+            const durationMinutes = Math.max(0, Number(task.duration) || 0);
+            const shadeColor = shadeColorByDuration(baseColor, durationMinutes);
 
             const previewBar = document.createElement('div');
             previewBar.className = 'task-preview-bar';
@@ -2354,12 +2500,10 @@
               detailRow.appendChild(categoryDetail);
             }
 
-            const durationValue = Number(task.duration);
-            if (!Number.isNaN(durationValue) && durationValue > 0) {
+            if (durationMinutes > 0) {
               const durationDetail = document.createElement('span');
               durationDetail.className = 'task-detail';
-              const formatted = Number.isInteger(durationValue) ? `${durationValue}h` : `${durationValue.toFixed(1)}h`;
-              durationDetail.textContent = `Duration ${formatted}`;
+              durationDetail.textContent = `Duration ${formatDuration(durationMinutes)}`;
               detailRow.appendChild(durationDetail);
             }
 
@@ -2442,7 +2586,7 @@
 
     function computeEndTime(start, duration) {
       const [hours, minutes] = start.split(':').map(Number);
-      const totalMinutes = hours * 60 + minutes + Math.round(Number(duration || 0) * 60);
+      const totalMinutes = hours * 60 + minutes + Math.round(Math.max(0, Number(duration || 0)));
       const endHours = Math.floor(totalMinutes / 60) % 24;
       const endMinutes = totalMinutes % 60;
       return `${String(endHours).padStart(2, '0')}:${String(endMinutes).padStart(2, '0')}`;
@@ -2469,6 +2613,7 @@
     document.getElementById('reset-calendar').addEventListener('click', () => {
       viewDate = new Date();
       initialScrollCompleted = false;
+      initialMiniScrollCompleted = false;
       renderCalendar();
     });
 
@@ -2478,6 +2623,7 @@
         if (Number.isNaN(delta)) return;
         const targetYear = viewDate.getFullYear() + delta;
         viewDate = new Date(targetYear, 0, 1);
+        initialMiniScrollCompleted = false;
         renderCalendar();
       });
     });
@@ -2570,10 +2716,14 @@
 
       const start = (formData.get('start') || '').trim();
       const durationRaw = formData.get('duration');
-      const durationValue = durationRaw !== null && durationRaw !== '' ? Number(durationRaw) : null;
-      if (durationValue != null && (Number.isNaN(durationValue) || durationValue < 0)) {
-        alert('Please provide a valid duration.');
-        return;
+      let durationValue = null;
+      if (durationRaw !== null && durationRaw !== '') {
+        const parsed = Number(durationRaw);
+        if (!Number.isFinite(parsed) || parsed < 0) {
+          alert('Please provide a valid duration.');
+          return;
+        }
+        durationValue = Math.round(parsed);
       }
       const notes = (formData.get('notes') || '').trim();
 
