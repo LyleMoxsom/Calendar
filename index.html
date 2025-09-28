@@ -93,48 +93,8 @@
       display: flex;
       flex-wrap: wrap;
       align-items: center;
-      justify-content: space-between;
+      justify-content: flex-end;
       gap: 16px;
-    }
-
-    .month-nav {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 14px 18px;
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: var(--radius-md);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      backdrop-filter: blur(14px);
-      box-shadow: var(--shadow);
-    }
-
-    .month-nav button {
-      appearance: none;
-      border: none;
-      background: var(--accent-soft);
-      color: var(--accent);
-      font-weight: 600;
-      font-size: 22px;
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      display: grid;
-      place-items: center;
-      cursor: pointer;
-      transition: transform 0.2s ease, background 0.2s ease;
-    }
-
-    .month-nav button:hover {
-      transform: translateY(-1px) scale(1.05);
-      background: rgba(106, 90, 205, 0.25);
-    }
-
-    .month-nav h2 {
-      margin: 0;
-      font-size: clamp(20px, 3vw, 28px);
-      font-weight: 600;
-      letter-spacing: 0.02em;
     }
 
     .control-buttons {
@@ -156,6 +116,11 @@
       display: inline-flex;
       align-items: center;
       gap: 8px;
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
     }
 
     .btn-primary {
@@ -188,6 +153,73 @@
       backdrop-filter: blur(18px);
       position: relative;
       overflow: visible;
+    }
+
+    .calendar-scroll {
+      display: flex;
+      flex-direction: column;
+      gap: 56px;
+      position: relative;
+    }
+
+    .month-block {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .month-divider {
+      position: relative;
+      height: 36px;
+      display: flex;
+      align-items: flex-end;
+      margin-bottom: 8px;
+    }
+
+    .month-divider::before {
+      content: '';
+      position: absolute;
+      left: -36px;
+      right: -36px;
+      bottom: 10px;
+      height: 2px;
+      background: rgba(255, 255, 255, 0.85);
+      box-shadow: 0 0 18px rgba(255, 255, 255, 0.55);
+    }
+
+    .month-block:first-of-type .month-divider::before {
+      box-shadow: 0 0 14px rgba(255, 255, 255, 0.35);
+    }
+
+    .month-label {
+      position: absolute;
+      left: 0;
+      top: -8px;
+      font-family: 'Space Grotesk', 'Inter', sans-serif;
+      font-size: clamp(26px, 6vw, 48px);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.28em;
+      color: rgba(255, 255, 255, 0.1);
+      pointer-events: none;
+    }
+
+    .month-tag {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(6px);
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: var(--text);
+      z-index: 1;
     }
 
     .weekday-row {
@@ -406,6 +438,122 @@
       color: rgba(255, 255, 255, 0.45);
     }
 
+    .mission-critical-panel {
+      position: absolute;
+      top: 0;
+      left: -320px;
+      width: clamp(240px, 22vw, 300px);
+      padding: 18px 20px;
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      background: rgba(28, 28, 44, 0.95);
+      box-shadow: 0 28px 50px rgba(0, 0, 0, 0.45);
+      backdrop-filter: blur(18px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      z-index: 20;
+    }
+
+    .mission-critical-panel.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .mission-critical-panel h3 {
+      margin: 0;
+      font-size: 16px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .mission-critical-week {
+      margin: 0;
+      font-size: 13px;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+    }
+
+    .mission-critical-content {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-height: 320px;
+      overflow: auto;
+      padding-right: 4px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
+    }
+
+    .mission-critical-content::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .mission-critical-content::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.18);
+      border-radius: 999px;
+    }
+
+    .mission-critical-empty {
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .mission-critical-item {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      align-items: flex-start;
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: var(--radius-sm);
+      border: 1px solid transparent;
+      background: rgba(255, 255, 255, 0.06);
+      color: inherit;
+      text-align: left;
+      cursor: pointer;
+      transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+    }
+
+    .mission-critical-item:hover,
+    .mission-critical-item:focus-visible {
+      transform: translateX(2px);
+      border-color: rgba(255, 255, 255, 0.28);
+      background: rgba(255, 255, 255, 0.1);
+      outline: none;
+    }
+
+    .mission-critical-item-title {
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .mission-critical-item-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .mission-critical-item-meta span {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .mission-critical-item-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
     .focus-range {
       border-color: rgba(106, 90, 205, 0.45);
       box-shadow: 0 0 0 2px rgba(106, 90, 205, 0.35);
@@ -424,18 +572,20 @@
       position: relative;
       background: var(--task-bg, rgba(255, 255, 255, 0.07));
       border-radius: var(--radius-sm);
-      padding: 8px 12px;
+      padding: 10px 12px;
       display: flex;
       flex-direction: column;
       gap: 6px;
       cursor: grab;
       transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.2s ease;
       min-height: 34px;
-      border: 1px solid transparent;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      overflow: hidden;
     }
 
     .task-card:hover {
       background: var(--task-bg-hover, rgba(255, 255, 255, 0.1));
+      border-color: rgba(255, 255, 255, 0.16);
     }
 
     .task-card:active {
@@ -459,12 +609,13 @@
       font-weight: 600;
       font-size: 14px;
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       gap: 10px;
+      flex-wrap: wrap;
     }
 
     .task-title .task-name {
-      flex: 1;
+      flex: 1 1 auto;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -488,9 +639,10 @@
       display: none;
       flex-direction: column;
       align-items: flex-start;
-      gap: 4px;
+      gap: 6px;
       font-size: 12px;
       color: var(--muted);
+      width: 100%;
     }
 
     .task-chip-row {
@@ -504,17 +656,21 @@
     }
 
     .task-chip {
-      padding: 3px 8px;
+      padding: 3px 10px;
       border-radius: 999px;
-      background: rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.1);
       color: var(--muted);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
     }
 
     .task-notes-preview {
       max-width: 100%;
-      white-space: nowrap;
+      white-space: normal;
       overflow: hidden;
       text-overflow: ellipsis;
+      line-height: 1.35;
     }
 
     .day.today {
@@ -657,6 +813,60 @@
       resize: vertical;
     }
 
+    .category-select-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .btn-compact {
+      padding: 8px 12px;
+      font-size: 12px;
+      letter-spacing: 0.08em;
+    }
+
+    .category-preview {
+      margin-top: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .category-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+      font-size: 13px;
+      letter-spacing: 0.02em;
+    }
+
+    .category-chip:hover,
+    .category-chip:focus-visible {
+      transform: translateY(-1px);
+      border-color: rgba(255, 255, 255, 0.28);
+      background: rgba(255, 255, 255, 0.12);
+      outline: none;
+    }
+
+    .category-chip[aria-pressed="true"] {
+      border-color: rgba(255, 255, 255, 0.45);
+      background: rgba(255, 255, 255, 0.18);
+    }
+
+    .category-chip-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.2);
+    }
+
     .hidden {
       display: none !important;
     }
@@ -728,6 +938,33 @@
       color: var(--muted);
       font-size: 13px;
     }
+
+    @media (max-width: 1100px) {
+      .mission-critical-panel {
+        left: -260px;
+        width: clamp(220px, 36vw, 280px);
+      }
+    }
+
+    @media (max-width: 900px) {
+      .mission-critical-panel {
+        position: static;
+        width: 100%;
+        left: auto;
+        right: auto;
+        opacity: 1;
+        pointer-events: auto;
+        display: none;
+      }
+
+      .mission-critical-panel.visible {
+        display: flex;
+      }
+
+      .calendar-scroll {
+        gap: 40px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -744,11 +981,6 @@
     </header>
 
     <section class="controls">
-      <div class="month-nav">
-        <button id="prev-month" aria-label="Previous month">&#x2039;</button>
-        <h2 id="month-label"></h2>
-        <button id="next-month" aria-label="Next month">&#x203A;</button>
-      </div>
       <div class="control-buttons">
         <button class="btn btn-ghost" id="reset-calendar" title="Reset to today">Today</button>
         <button class="btn btn-primary" id="add-focus">+ Focus Block</button>
@@ -756,16 +988,12 @@
     </section>
 
     <section class="calendar-card">
-      <div class="weekday-row">
-        <span>Mon</span>
-        <span>Tue</span>
-        <span>Wed</span>
-        <span>Thu</span>
-        <span>Fri</span>
-        <span class="weekend">Sat</span>
-        <span class="weekend">Sun</span>
+      <div class="mission-critical-panel" id="mission-critical-panel" aria-live="polite">
+        <h3>This week&rsquo;s mission critical tasks</h3>
+        <p class="mission-critical-week" id="mission-critical-week"></p>
+        <div class="mission-critical-content" id="mission-critical-content"></div>
       </div>
-      <div class="calendar-grid" id="calendar-grid"></div>
+      <div class="calendar-scroll" id="calendar-grid"></div>
     </section>
   </div>
 
@@ -779,7 +1007,11 @@
         </div>
         <div class="field">
           <label for="task-category">Category</label>
-          <select id="task-category" name="category"></select>
+          <div class="category-select-group">
+            <select id="task-category" name="category"></select>
+            <button type="button" class="btn btn-ghost btn-compact" id="delete-category">Delete category</button>
+          </div>
+          <div class="category-preview" id="category-preview"></div>
         </div>
         <div class="field hidden" id="new-category-name-field">
           <label for="new-category-name">New category</label>
@@ -792,7 +1024,7 @@
         </div>
         <div class="field">
           <label for="task-start">Start time</label>
-          <input type="time" id="task-start" name="start" placeholder="09:00">
+          <input type="time" id="task-start" name="start" placeholder="09:00" step="900">
         </div>
         <div class="field">
           <label for="task-duration">Time allocation (hours)</label>
@@ -1161,7 +1393,6 @@
       return rgbToHex(nr, ng, nb);
     }
 
-    const monthLabelEl = document.getElementById('month-label');
     const calendarGridEl = document.getElementById('calendar-grid');
     const currentDateEl = document.querySelector('.current-date');
     const currentTimeEl = document.querySelector('.current-time');
@@ -1181,6 +1412,17 @@
     const taskStartInput = document.getElementById('task-start');
     const taskDurationInput = document.getElementById('task-duration');
     const taskNotesInput = document.getElementById('task-notes');
+    const categoryPreviewEl = document.getElementById('category-preview');
+    const deleteCategoryBtn = document.getElementById('delete-category');
+    const missionCriticalPanel = document.getElementById('mission-critical-panel');
+    const missionCriticalWeekEl = document.getElementById('mission-critical-week');
+    const missionCriticalContent = document.getElementById('mission-critical-content');
+    const calendarCardEl = document.querySelector('.calendar-card');
+
+    if (deleteCategoryBtn) {
+      deleteCategoryBtn.disabled = true;
+      deleteCategoryBtn.setAttribute('aria-disabled', 'true');
+    }
 
     const focusModalBackdrop = document.getElementById('focus-modal');
     const focusForm = document.getElementById('focus-form');
@@ -1194,8 +1436,6 @@
     let state = loadState();
     ensureGeneralCategoryExists();
     let today = new Date();
-    let viewYear = today.getFullYear();
-    let viewMonth = today.getMonth();
 
     let editingTask = null;
     let editingDate = null;
@@ -1203,6 +1443,10 @@
     let draggedTask = null;
     let focusSelection = null;
     let focusSelectionPointerId = null;
+    let missionPanelHideTimer = null;
+    let activeMissionWeekStart = null;
+    let activeHoverCell = null;
+    let initialScrollCompleted = false;
 
     function detachFocusPointerListeners() {
       window.removeEventListener('pointerup', handleFocusPointerUp);
@@ -1349,15 +1593,74 @@
       return general;
     }
 
-    function populateCategorySelect(selectedName, forceNew = false) {
+    function getSortedCategories() {
       ensureGeneralCategoryExists();
-      const sorted = state.categories
+      return state.categories
         .slice()
         .sort((a, b) => {
           if (a.name === 'General') return -1;
           if (b.name === 'General') return 1;
           return a.name.localeCompare(b.name);
         });
+    }
+
+    function renderCategoryPreview(categories, selectedValue) {
+      if (!categoryPreviewEl) return;
+      categoryPreviewEl.innerHTML = '';
+      const showPreview = selectedValue && selectedValue !== '__new__';
+      categoryPreviewEl.classList.toggle('hidden', !showPreview);
+      if (!showPreview) return;
+
+      categories.forEach((category) => {
+        const chip = document.createElement('button');
+        chip.type = 'button';
+        chip.className = 'category-chip';
+        chip.dataset.category = category.name;
+        chip.setAttribute('aria-pressed', category.name === selectedValue ? 'true' : 'false');
+
+        const dot = document.createElement('span');
+        dot.className = 'category-chip-dot';
+        dot.style.background = category.color;
+        chip.appendChild(dot);
+        chip.append(category.name);
+
+        chip.addEventListener('click', () => {
+          taskCategorySelect.value = category.name;
+          updateCategoryPreviewSelection(category.name);
+          toggleNewCategoryFields(false);
+          updateDeleteCategoryButtonState(category.name);
+        });
+
+        chip.addEventListener('keydown', (event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            taskCategorySelect.value = category.name;
+            updateCategoryPreviewSelection(category.name);
+            toggleNewCategoryFields(false);
+            updateDeleteCategoryButtonState(category.name);
+          }
+        });
+
+        categoryPreviewEl.appendChild(chip);
+      });
+    }
+
+    function updateCategoryPreviewSelection(value) {
+      if (!categoryPreviewEl) return;
+      categoryPreviewEl.querySelectorAll('.category-chip').forEach((chip) => {
+        chip.setAttribute('aria-pressed', chip.dataset.category === value ? 'true' : 'false');
+      });
+    }
+
+    function updateDeleteCategoryButtonState(selectedValue) {
+      if (!deleteCategoryBtn) return;
+      const disabled = !selectedValue || selectedValue === '__new__' || selectedValue.toLowerCase() === 'general';
+      deleteCategoryBtn.disabled = disabled;
+      deleteCategoryBtn.setAttribute('aria-disabled', String(disabled));
+    }
+
+    function populateCategorySelect(selectedName, forceNew = false) {
+      const sorted = getSortedCategories();
 
       taskCategorySelect.innerHTML = '';
       sorted.forEach((category) => {
@@ -1372,16 +1675,20 @@
       newOption.textContent = 'Add new category…';
       taskCategorySelect.appendChild(newOption);
 
+      let nextValue;
       if (forceNew) {
-        taskCategorySelect.value = '__new__';
+        nextValue = '__new__';
       } else if (selectedName) {
         const match = sorted.find((category) => category.name === selectedName);
-        taskCategorySelect.value = match ? match.name : (sorted[0]?.name || '__new__');
+        nextValue = match ? match.name : (sorted[0]?.name || '__new__');
       } else {
-        taskCategorySelect.value = sorted[0] ? sorted[0].name : '__new__';
+        nextValue = sorted[0] ? sorted[0].name : '__new__';
       }
 
-      toggleNewCategoryFields(taskCategorySelect.value === '__new__');
+      taskCategorySelect.value = nextValue;
+      toggleNewCategoryFields(nextValue === '__new__');
+      renderCategoryPreview(sorted, nextValue);
+      updateDeleteCategoryButtonState(nextValue);
     }
 
     function openTaskModal(dateKey, task) {
@@ -1462,67 +1769,350 @@
       }
     }
 
-    function renderCalendar() {
-      clearDragState();
+    function createWeekdayRow() {
+      const row = document.createElement('div');
+      row.className = 'weekday-row';
+      const labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+      labels.forEach((label, index) => {
+        const span = document.createElement('span');
+        span.textContent = label;
+        if (index >= 5) {
+          span.classList.add('weekend');
+        }
+        row.appendChild(span);
+      });
+      return row;
+    }
 
-      monthLabelEl.textContent = new Date(viewYear, viewMonth, 1).toLocaleDateString(undefined, {
-        month: 'long',
-        year: 'numeric'
+    function computeCalendarBounds() {
+      const baselineStart = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+      const baselineEnd = new Date(today.getFullYear(), today.getMonth() + 3, 1);
+      let minDate = baselineStart;
+      let maxDate = baselineEnd;
+
+      Object.keys(state.tasks).forEach((dateKey) => {
+        const date = parseDateKey(dateKey);
+        if (!date || Number.isNaN(date.getTime())) return;
+        const monthStart = new Date(date.getFullYear(), date.getMonth(), 1);
+        if (monthStart < minDate) minDate = monthStart;
+        if (monthStart > maxDate) maxDate = monthStart;
       });
 
+      state.projects.forEach((project) => {
+        if (!project) return;
+        if (project.start) {
+          const startDate = parseDateKey(project.start);
+          if (startDate && !Number.isNaN(startDate.getTime())) {
+            const startMonth = new Date(startDate.getFullYear(), startDate.getMonth(), 1);
+            if (startMonth < minDate) minDate = startMonth;
+          }
+        }
+        if (project.end) {
+          const endDate = parseDateKey(project.end);
+          if (endDate && !Number.isNaN(endDate.getTime())) {
+            const endMonth = new Date(endDate.getFullYear(), endDate.getMonth(), 1);
+            if (endMonth > maxDate) maxDate = endMonth;
+          }
+        }
+      });
+
+      const start = new Date(minDate);
+      start.setMonth(start.getMonth() - 1);
+      const end = new Date(maxDate);
+      end.setMonth(end.getMonth() + 1);
+      return { start, end };
+    }
+
+    function buildMonthSequence() {
+      const { start, end } = computeCalendarBounds();
+      const cursor = new Date(start);
+      cursor.setDate(1);
+      const months = [];
+      while (cursor <= end) {
+        months.push({ year: cursor.getFullYear(), month: cursor.getMonth() });
+        cursor.setMonth(cursor.getMonth() + 1);
+      }
+      return months;
+    }
+
+    function getWeekStartKey(dateKey) {
+      const date = parseDateKey(dateKey);
+      if (!date || Number.isNaN(date.getTime())) return dateKey;
+      const offset = (date.getDay() + 6) % 7;
+      const startDate = new Date(date);
+      startDate.setDate(startDate.getDate() - offset);
+      return formatDateKey(startDate);
+    }
+
+    function getMissionCriticalEntries(weekStartKey) {
+      const entries = [];
+      const startDate = parseDateKey(weekStartKey);
+      if (!startDate || Number.isNaN(startDate.getTime())) return entries;
+      for (let i = 0; i < 7; i++) {
+        const current = new Date(startDate);
+        current.setDate(startDate.getDate() + i);
+        const key = formatDateKey(current);
+        const tasks = (state.tasks[key] || []).filter((task) => task.missionCritical);
+        tasks.forEach((task) => {
+          entries.push({ task, dateKey: key, date: new Date(current) });
+        });
+      }
+      entries.sort((a, b) => {
+        if (a.dateKey !== b.dateKey) return a.dateKey.localeCompare(b.dateKey);
+        return compareTasks(a.task, b.task);
+      });
+      return entries;
+    }
+
+    function getTaskTimeRange(task) {
+      if (!task || !task.start) return '';
+      const endTime = task.duration ? computeEndTime(task.start, task.duration) : null;
+      return endTime ? `${task.start} - ${endTime}` : task.start;
+    }
+
+    function renderMissionCriticalPanel(entries, weekStartKey) {
+      if (!missionCriticalPanel || !missionCriticalContent || !missionCriticalWeekEl) return;
+      missionCriticalContent.innerHTML = '';
+      activeMissionWeekStart = weekStartKey;
+
+      const startDate = parseDateKey(weekStartKey);
+      if (startDate && !Number.isNaN(startDate.getTime())) {
+        const endDate = new Date(startDate);
+        endDate.setDate(endDate.getDate() + 6);
+        const startLabel = startDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+        const endLabel = endDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+        missionCriticalWeekEl.textContent = `${startLabel} – ${endLabel}`;
+      } else {
+        missionCriticalWeekEl.textContent = '';
+      }
+
+      if (!entries.length) {
+        const empty = document.createElement('div');
+        empty.className = 'mission-critical-empty';
+        empty.textContent = 'No mission critical tasks scheduled.';
+        missionCriticalContent.appendChild(empty);
+        return;
+      }
+
+      entries.forEach((entry) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'mission-critical-item';
+        button.dataset.date = entry.dateKey;
+        button.dataset.taskId = String(entry.task.id);
+
+        const title = document.createElement('span');
+        title.className = 'mission-critical-item-title';
+        title.textContent = entry.task.title;
+        button.appendChild(title);
+
+        const meta = document.createElement('div');
+        meta.className = 'mission-critical-item-meta';
+
+        const daySpan = document.createElement('span');
+        daySpan.textContent = entry.date.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+        meta.appendChild(daySpan);
+
+        const timeRange = getTaskTimeRange(entry.task);
+        if (timeRange) {
+          const timeSpan = document.createElement('span');
+          timeSpan.textContent = timeRange;
+          meta.appendChild(timeSpan);
+        }
+
+        const durationValue = Number(entry.task.duration);
+        if (!Number.isNaN(durationValue) && durationValue > 0) {
+          const durationSpan = document.createElement('span');
+          const formatted = Number.isInteger(durationValue) ? `${durationValue}h` : `${durationValue.toFixed(1)}h`;
+          durationSpan.textContent = `Duration ${formatted}`;
+          meta.appendChild(durationSpan);
+        }
+
+        const category = getCategoryByName(entry.task.category);
+        if (category) {
+          const categorySpan = document.createElement('span');
+          const dot = document.createElement('span');
+          dot.className = 'mission-critical-item-dot';
+          dot.style.background = category.color;
+          categorySpan.appendChild(dot);
+          categorySpan.append(category.name);
+          meta.appendChild(categorySpan);
+        }
+
+        button.appendChild(meta);
+        missionCriticalContent.appendChild(button);
+      });
+    }
+
+    function positionMissionCriticalPanel(cell) {
+      if (!missionCriticalPanel || !calendarCardEl) return;
+      if (window.matchMedia('(max-width: 900px)').matches) {
+        missionCriticalPanel.style.top = '0px';
+        return;
+      }
+      const cardRect = calendarCardEl.getBoundingClientRect();
+      const cellRect = cell.getBoundingClientRect();
+      const offset = cellRect.top - cardRect.top;
+      missionCriticalPanel.style.top = `${Math.max(0, offset)}px`;
+    }
+
+    function showMissionCriticalPanel(dateKey, cell) {
+      if (!missionCriticalPanel) return;
+      const weekStartKey = getWeekStartKey(dateKey);
+      const entries = getMissionCriticalEntries(weekStartKey);
+      renderMissionCriticalPanel(entries, weekStartKey);
+      positionMissionCriticalPanel(cell);
+      missionCriticalPanel.classList.add('visible');
+      clearTimeout(missionPanelHideTimer);
+      missionPanelHideTimer = null;
+      activeHoverCell = cell;
+    }
+
+    function scheduleMissionCriticalPanelHide(event) {
+      if (!missionCriticalPanel) return;
+      const related = event?.relatedTarget;
+      if (related && (missionCriticalPanel.contains(related) || (activeHoverCell && activeHoverCell.contains(related)))) {
+        return;
+      }
+      clearTimeout(missionPanelHideTimer);
+      missionPanelHideTimer = setTimeout(() => {
+        hideMissionCriticalPanel();
+      }, 160);
+    }
+
+    function hideMissionCriticalPanel(force = false) {
+      if (!missionCriticalPanel) return;
+      missionCriticalPanel.classList.remove('visible');
+      clearTimeout(missionPanelHideTimer);
+      missionPanelHideTimer = null;
+      if (force) {
+        if (missionCriticalContent) missionCriticalContent.innerHTML = '';
+        if (missionCriticalWeekEl) missionCriticalWeekEl.textContent = '';
+      }
+      if (activeHoverCell && !activeHoverCell.matches(':hover')) {
+        activeHoverCell.classList.remove('show-flyout');
+      }
+      activeHoverCell = null;
+      activeMissionWeekStart = null;
+    }
+
+    function setupFlyoutHover(cell, flyout, dateKey) {
+      if (!cell || !flyout) return;
+      let hideTimeout;
+
+      const show = () => {
+        clearTimeout(hideTimeout);
+        cell.classList.add('show-flyout');
+        showMissionCriticalPanel(dateKey, cell);
+      };
+
+      const hide = () => {
+        cell.classList.remove('show-flyout');
+        if (activeHoverCell === cell) {
+          activeHoverCell = null;
+        }
+      };
+
+      const scheduleHide = (event) => {
+        const related = event?.relatedTarget;
+        if (related && (cell.contains(related) || flyout.contains(related) || (missionCriticalPanel && missionCriticalPanel.contains(related)))) {
+          return;
+        }
+        clearTimeout(hideTimeout);
+        hideTimeout = setTimeout(() => hide(), 140);
+        scheduleMissionCriticalPanelHide(event);
+      };
+
+      cell.addEventListener('mouseenter', show);
+      cell.addEventListener('mouseleave', scheduleHide);
+      flyout.addEventListener('mouseenter', show);
+      flyout.addEventListener('mouseleave', scheduleHide);
+    }
+
+    function scrollToToday({ smooth = true } = {}) {
+      if (!calendarGridEl) return;
+      const todayCell = calendarGridEl.querySelector('.day.today');
+      if (!todayCell) return;
+      todayCell.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto', block: 'center' });
+    }
+
+    function renderCalendar() {
+      clearDragState();
+      hideMissionCriticalPanel(true);
+      if (!calendarGridEl) return;
+
       calendarGridEl.innerHTML = '';
-      const firstDay = new Date(viewYear, viewMonth, 1);
-      const startWeekday = (firstDay.getDay() + 6) % 7;
-      const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
-      const totalCells = Math.ceil((startWeekday + daysInMonth) / 7) * 7;
+      const months = buildMonthSequence();
       const realTodayKey = formatDateKey(new Date());
 
-      for (let i = 0; i < totalCells; i++) {
-        const cell = document.createElement('div');
-        cell.className = 'day';
+      months.forEach(({ year, month }) => {
+        const monthBlock = document.createElement('div');
+        monthBlock.className = 'month-block';
 
-        const dayNumber = i - startWeekday + 1;
-        if (dayNumber < 1 || dayNumber > daysInMonth) {
-          cell.classList.add('empty');
-          calendarGridEl.appendChild(cell);
-          continue;
-        }
+        const labelDate = new Date(year, month, 1);
+        const labelText = labelDate.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
 
-        const date = new Date(viewYear, viewMonth, dayNumber);
-        const dateKey = formatDateKey(date);
-        cell.dataset.date = dateKey;
+        const divider = document.createElement('div');
+        divider.className = 'month-divider';
+        const overlayLabel = document.createElement('span');
+        overlayLabel.className = 'month-label';
+        overlayLabel.textContent = labelText;
+        divider.appendChild(overlayLabel);
+        const tag = document.createElement('span');
+        tag.className = 'month-tag';
+        tag.textContent = labelText;
+        divider.appendChild(tag);
 
-        const weekday = date.getDay();
-        if (weekday === 0 || weekday === 6) {
-          cell.classList.add('weekend');
-        }
+        monthBlock.appendChild(divider);
+        monthBlock.appendChild(createWeekdayRow());
 
-        if (realTodayKey === dateKey) {
-          cell.classList.add('today');
-        }
+        const monthGrid = document.createElement('div');
+        monthGrid.className = 'calendar-grid';
+        monthBlock.appendChild(monthGrid);
 
-        cell.addEventListener('mouseenter', () => {
-          cell.classList.add('show-flyout');
-        });
+        const firstDay = new Date(year, month, 1);
+        const startWeekday = (firstDay.getDay() + 6) % 7;
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        const totalCells = Math.ceil((startWeekday + daysInMonth) / 7) * 7;
 
-        cell.addEventListener('mouseleave', () => {
-          cell.classList.remove('show-flyout');
-        });
+        for (let i = 0; i < totalCells; i++) {
+          const cell = document.createElement('div');
+          cell.className = 'day';
 
-        cell.addEventListener('pointerdown', (event) => {
-          if (event.button !== 0 || !event.shiftKey) return;
-          if (event.target.closest('.task-card') || event.target.closest('.task-flyout') || event.target.closest('.add-task-btn') || event.target.closest('.focus-badge')) {
-            return;
+          const dayNumber = i - startWeekday + 1;
+          if (dayNumber < 1 || dayNumber > daysInMonth) {
+            cell.classList.add('empty');
+            monthGrid.appendChild(cell);
+            continue;
           }
-          event.preventDefault();
-          startFocusSelection(dateKey, event.pointerId);
-        });
 
-        cell.addEventListener('pointerenter', () => {
-          if (!focusSelection) return;
-          focusSelection.current = dateKey;
-          updateFocusSelectionHighlight();
-        });
+          const date = new Date(year, month, dayNumber);
+          const dateKey = formatDateKey(date);
+          cell.dataset.date = dateKey;
+
+          const weekday = date.getDay();
+          if (weekday === 0 || weekday === 6) {
+            cell.classList.add('weekend');
+          }
+
+          if (realTodayKey === dateKey) {
+            cell.classList.add('today');
+          }
+
+          cell.addEventListener('pointerdown', (event) => {
+            if (event.button !== 0 || !event.shiftKey) return;
+            if (event.target.closest('.task-card') || event.target.closest('.task-flyout') || event.target.closest('.add-task-btn') || event.target.closest('.focus-badge')) {
+              return;
+            }
+            event.preventDefault();
+            startFocusSelection(dateKey, event.pointerId);
+          });
+
+          cell.addEventListener('pointerenter', () => {
+            if (!focusSelection) return;
+            focusSelection.current = dateKey;
+            updateFocusSelectionHighlight();
+          });
 
           cell.addEventListener('dragenter', (event) => {
             event.preventDefault();
@@ -1549,70 +2139,71 @@
             clearDragState();
           });
 
-        const header = document.createElement('div');
-        header.className = 'day-header';
-        const numberEl = document.createElement('div');
-        numberEl.className = 'day-number';
-        numberEl.textContent = dayNumber;
-        header.appendChild(numberEl);
+          const header = document.createElement('div');
+          header.className = 'day-header';
+          const numberEl = document.createElement('div');
+          numberEl.className = 'day-number';
+          numberEl.textContent = dayNumber;
+          header.appendChild(numberEl);
 
-        const addBtn = document.createElement('button');
-        addBtn.className = 'add-task-btn';
-        addBtn.type = 'button';
-        addBtn.textContent = '+';
-        addBtn.title = 'Add task';
-        addBtn.addEventListener('click', () => openTaskModal(dateKey));
-        header.appendChild(addBtn);
+          const addBtn = document.createElement('button');
+          addBtn.className = 'add-task-btn';
+          addBtn.type = 'button';
+          addBtn.textContent = '+';
+          addBtn.title = 'Add task';
+          addBtn.addEventListener('click', () => openTaskModal(dateKey));
+          header.appendChild(addBtn);
 
-        cell.appendChild(header);
+          cell.appendChild(header);
 
-        const overlayStack = document.createElement('div');
-        overlayStack.className = 'focus-overlay-stack';
-        const focusBadges = document.createElement('div');
-        focusBadges.className = 'focus-badges';
+          const overlayStack = document.createElement('div');
+          overlayStack.className = 'focus-overlay-stack';
+          const focusBadges = document.createElement('div');
+          focusBadges.className = 'focus-badges';
 
-        const activeProjects = state.projects.filter((project) => project.start <= dateKey && project.end >= dateKey);
-        activeProjects.forEach((project) => {
-          const overlay = document.createElement('div');
-          overlay.className = 'focus-overlay';
-          overlay.style.background = hexToRgba(project.color, 0.18);
-          overlayStack.appendChild(overlay);
+          const activeProjects = state.projects.filter((project) => project.start <= dateKey && project.end >= dateKey);
+          activeProjects.forEach((project) => {
+            const overlay = document.createElement('div');
+            overlay.className = 'focus-overlay';
+            overlay.style.background = hexToRgba(project.color, 0.18);
+            overlayStack.appendChild(overlay);
 
-          const badge = document.createElement('button');
-          badge.type = 'button';
-          badge.className = 'focus-badge';
-          const dot = document.createElement('span');
-          dot.className = 'focus-badge-dot';
-          dot.style.background = project.color;
-          badge.appendChild(dot);
-          const label = document.createElement('span');
-          label.textContent = project.name;
-          badge.appendChild(label);
-          badge.addEventListener('click', (event) => {
-            event.stopPropagation();
-            openFocusModal(project);
-          });
-          badge.addEventListener('keydown', (event) => {
-            if (event.key === 'Enter' || event.key === ' ') {
-              event.preventDefault();
+            const badge = document.createElement('button');
+            badge.type = 'button';
+            badge.className = 'focus-badge';
+            const dot = document.createElement('span');
+            dot.className = 'focus-badge-dot';
+            dot.style.background = project.color;
+            badge.appendChild(dot);
+            const label = document.createElement('span');
+            label.textContent = project.name;
+            badge.appendChild(label);
+            badge.addEventListener('click', (event) => {
+              event.stopPropagation();
               openFocusModal(project);
-            }
+            });
+            badge.addEventListener('keydown', (event) => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                openFocusModal(project);
+              }
+            });
+            focusBadges.appendChild(badge);
           });
-          focusBadges.appendChild(badge);
-        });
 
-        if (activeProjects.length > 0) {
-          focusBadges.classList.add('active');
-        }
+          if (activeProjects.length > 0) {
+            focusBadges.classList.add('active');
+          }
 
-        cell.appendChild(overlayStack);
+          cell.appendChild(overlayStack);
 
-        const taskList = document.createElement('div');
-        taskList.className = 'task-list';
-        const preview = document.createElement('div');
-        preview.className = 'task-preview';
-        const tasks = (state.tasks[dateKey] || []).slice().sort(compareTasks);
-        tasks.forEach((task) => {
+          const taskList = document.createElement('div');
+          taskList.className = 'task-list';
+          const preview = document.createElement('div');
+          preview.className = 'task-preview';
+
+          const tasks = (state.tasks[dateKey] || []).slice().sort(compareTasks);
+          tasks.forEach((task) => {
             const taskCard = document.createElement('div');
             taskCard.className = 'task-card';
             taskCard.draggable = true;
@@ -1662,12 +2253,7 @@
             name.textContent = task.title;
             title.appendChild(name);
 
-            let timeRange = '';
-            if (task.start) {
-              const endTime = task.duration ? computeEndTime(task.start, task.duration) : null;
-              timeRange = endTime ? `${task.start} - ${endTime}` : task.start;
-            }
-
+            const timeRange = getTaskTimeRange(task);
             if (timeRange) {
               const timeEl = document.createElement('span');
               timeEl.className = 'task-time';
@@ -1693,9 +2279,7 @@
             if (!Number.isNaN(durationValue) && durationValue > 0) {
               const durationChip = document.createElement('span');
               durationChip.className = 'task-chip';
-              const formatted = Number.isInteger(durationValue)
-                ? `${durationValue}h`
-                : `${durationValue.toFixed(1)}h`;
+              const formatted = Number.isInteger(durationValue) ? `${durationValue}h` : `${durationValue.toFixed(1)}h`;
               durationChip.textContent = `Duration ${formatted}`;
               chipRow.appendChild(durationChip);
             }
@@ -1726,41 +2310,50 @@
             }
 
             taskList.appendChild(taskCard);
-        });
+          });
 
-        if (!tasks.length) {
-          const previewEmpty = document.createElement('div');
-          previewEmpty.className = 'task-preview-empty';
-          previewEmpty.textContent = 'No tasks yet';
-          preview.appendChild(previewEmpty);
+          if (!tasks.length) {
+            const previewEmpty = document.createElement('div');
+            previewEmpty.className = 'task-preview-empty';
+            previewEmpty.textContent = 'No tasks yet';
+            preview.appendChild(previewEmpty);
 
-          const empty = document.createElement('div');
-          empty.className = 'empty-state';
-          empty.textContent = 'Drop tasks here';
-          taskList.appendChild(empty);
+            const empty = document.createElement('div');
+            empty.className = 'empty-state';
+            empty.textContent = 'Drop tasks here';
+            taskList.appendChild(empty);
+          }
+
+          const flyout = document.createElement('div');
+          flyout.className = 'task-flyout';
+          if (activeProjects.length > 0) {
+            flyout.appendChild(focusBadges);
+          }
+          flyout.appendChild(taskList);
+
+          cell.appendChild(preview);
+          cell.appendChild(flyout);
+
+          if (realTodayKey === dateKey) {
+            const progress = document.createElement('div');
+            progress.className = 'day-progress';
+            cell.appendChild(progress);
+          }
+
+          monthGrid.appendChild(cell);
+          setupFlyoutHover(cell, flyout, dateKey);
         }
 
-        const flyout = document.createElement('div');
-        flyout.className = 'task-flyout';
-        if (activeProjects.length > 0) {
-          flyout.appendChild(focusBadges);
-        }
-        flyout.appendChild(taskList);
-
-        cell.appendChild(preview);
-        cell.appendChild(flyout);
-
-        if (realTodayKey === dateKey) {
-          const progress = document.createElement('div');
-          progress.className = 'day-progress';
-          cell.appendChild(progress);
-        }
-
-        calendarGridEl.appendChild(cell);
-      }
+        calendarGridEl.appendChild(monthBlock);
+      });
 
       updateCurrentTime();
       updateFocusSelectionHighlight();
+
+      if (!initialScrollCompleted) {
+        initialScrollCompleted = true;
+        setTimeout(() => scrollToToday(), 150);
+      }
     }
 
     function computeEndTime(start, duration) {
@@ -1789,31 +2382,10 @@
       renderCalendar();
     }
 
-    document.getElementById('prev-month').addEventListener('click', () => {
-      if (viewMonth === 0) {
-        viewMonth = 11;
-        viewYear -= 1;
-      } else {
-        viewMonth -= 1;
-      }
-      renderCalendar();
-    });
-
-    document.getElementById('next-month').addEventListener('click', () => {
-      if (viewMonth === 11) {
-        viewMonth = 0;
-        viewYear += 1;
-      } else {
-        viewMonth += 1;
-      }
-      renderCalendar();
-    });
-
     document.getElementById('reset-calendar').addEventListener('click', () => {
       today = new Date();
-      viewYear = today.getFullYear();
-      viewMonth = today.getMonth();
       renderCalendar();
+      setTimeout(() => scrollToToday(), 150);
     });
 
     document.getElementById('add-focus').addEventListener('click', () => {
@@ -1822,11 +2394,77 @@
 
     taskCancelBtn.addEventListener('click', closeTaskModal);
     taskCategorySelect.addEventListener('change', () => {
-      const isNew = taskCategorySelect.value === '__new__';
+      const value = taskCategorySelect.value;
+      const isNew = value === '__new__';
       toggleNewCategoryFields(isNew);
       if (!isNew) {
         newCategoryNameInput.value = '';
         newCategoryColorInput.value = '';
+      }
+      renderCategoryPreview(getSortedCategories(), value);
+      updateDeleteCategoryButtonState(value);
+    });
+
+    if (deleteCategoryBtn) {
+      deleteCategoryBtn.addEventListener('click', () => {
+        const selectedValue = taskCategorySelect.value;
+        if (!selectedValue || selectedValue === '__new__' || selectedValue.toLowerCase() === 'general') {
+          return;
+        }
+        if (!window.confirm(`Delete the "${selectedValue}" category? All tasks will be reassigned to General.`)) {
+          return;
+        }
+        const index = state.categories.findIndex((category) => category.name === selectedValue);
+        if (index === -1) return;
+        const general = ensureGeneralCategoryExists();
+        state.categories.splice(index, 1);
+        Object.keys(state.tasks).forEach((dateKey) => {
+          const tasks = state.tasks[dateKey];
+          if (!Array.isArray(tasks)) return;
+          tasks.forEach((task) => {
+            if (task.category === selectedValue) {
+              task.category = general.name;
+            }
+          });
+        });
+        populateCategorySelect(general.name);
+        saveState();
+        renderCalendar();
+      });
+    }
+
+    if (missionCriticalPanel) {
+      missionCriticalPanel.addEventListener('mouseenter', () => {
+        clearTimeout(missionPanelHideTimer);
+        missionPanelHideTimer = null;
+        if (activeHoverCell) {
+          activeHoverCell.classList.add('show-flyout');
+        }
+      });
+
+      missionCriticalPanel.addEventListener('mouseleave', (event) => {
+        scheduleMissionCriticalPanelHide(event);
+      });
+    }
+
+    if (missionCriticalContent) {
+      missionCriticalContent.addEventListener('click', (event) => {
+        const target = event.target.closest('.mission-critical-item');
+        if (!target) return;
+        const dateKey = target.dataset.date;
+        const taskId = Number(target.dataset.taskId);
+        const tasks = state.tasks[dateKey] || [];
+        const task = tasks.find((item) => item.id === taskId);
+        if (task) {
+          openTaskModal(dateKey, task);
+          hideMissionCriticalPanel();
+        }
+      });
+    }
+
+    window.addEventListener('resize', () => {
+      if (missionCriticalPanel && missionCriticalPanel.classList.contains('visible') && activeHoverCell) {
+        positionMissionCriticalPanel(activeHoverCell);
       }
     });
     focusCancelBtn.addEventListener('click', closeFocusModal);
