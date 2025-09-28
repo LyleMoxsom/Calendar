@@ -283,6 +283,13 @@
       justify-content: center;
       font-size: 11px;
       color: rgba(255, 255, 255, 0.7);
+      overflow: hidden;
+      isolation: isolate;
+    }
+
+    .mini-day-number {
+      position: relative;
+      z-index: 3;
     }
 
     .mini-day.weekend {
@@ -302,20 +309,42 @@
       font-weight: 600;
     }
 
-    .mini-focus-dots {
+    .mini-focus-stack {
       position: absolute;
-      bottom: 4px;
-      left: 50%;
-      transform: translateX(-50%);
-      display: inline-flex;
+      inset: 3px;
+      display: flex;
+      flex-direction: column;
       gap: 3px;
+      pointer-events: none;
+      z-index: 2;
     }
 
-    .mini-focus-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2);
+    .mini-focus-block {
+      flex: 1;
+      border-radius: 8px;
+      border: 1px solid var(--mini-focus-border, rgba(255, 255, 255, 0.14));
+      background:
+        linear-gradient(135deg, var(--mini-focus-strong, rgba(255, 255, 255, 0.12)), var(--mini-focus-soft, rgba(255, 255, 255, 0.04)));
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.28);
+      opacity: 0.9;
+      transition: transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+      pointer-events: auto;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .mini-focus-block:hover,
+    .mini-focus-block:focus-visible {
+      opacity: 1;
+      transform: translateY(-1px);
+      box-shadow: 0 14px 26px rgba(0, 0, 0, 0.35);
+      border-color: var(--mini-focus-border, rgba(255, 255, 255, 0.28));
+      outline: none;
+    }
+
+    .mini-day.focus-range {
+      border-color: rgba(106, 90, 205, 0.45);
+      box-shadow: 0 0 0 2px rgba(106, 90, 205, 0.35);
     }
 
     @media (max-width: 1180px) {
@@ -582,19 +611,19 @@
       transform: translate(-50%, -12px);
       width: clamp(260px, 32vw, 360px);
       max-height: clamp(220px, 52vh, 480px);
-      padding: 18px;
+      padding: 20px;
       border-radius: var(--radius-lg);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      background: rgba(21, 21, 31, 0.96);
-      box-shadow: 0 32px 60px rgba(0, 0, 0, 0.48);
-      backdrop-filter: blur(18px);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      background: rgba(18, 18, 28, 0.96);
+      box-shadow: 0 36px 72px rgba(0, 0, 0, 0.52);
+      backdrop-filter: blur(20px);
       opacity: 0;
       pointer-events: none;
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 16px;
       transition: opacity 0.3s ease, transform 0.3s ease;
-      z-index: 12;
+      z-index: 40;
     }
 
     .day:is(:hover, .drag-over, .show-flyout) .task-flyout {
@@ -631,62 +660,80 @@
 
     .task-card {
       position: relative;
-      background: var(--task-bg, rgba(255, 255, 255, 0.07));
-      border-radius: var(--radius-sm);
-      padding: 10px 12px;
+      background:
+        linear-gradient(135deg, var(--task-tint-strong, rgba(255, 255, 255, 0.16)), var(--task-tint-soft, rgba(255, 255, 255, 0.05))),
+        rgba(15, 15, 24, 0.78);
+      border-radius: 18px;
+      padding: 16px 18px;
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 12px;
       cursor: grab;
-      transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.2s ease;
-      min-height: 34px;
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+      min-height: 52px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: 0 22px 40px rgba(0, 0, 0, 0.42);
       overflow: hidden;
     }
 
+    .task-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: linear-gradient(150deg, rgba(255, 255, 255, 0.1), transparent);
+      opacity: 0.7;
+      pointer-events: none;
+    }
+
+    .task-card::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      width: 4px;
+      background: var(--task-outline, rgba(255, 255, 255, 0.24));
+      opacity: 0.85;
+      pointer-events: none;
+    }
+
     .task-card:hover {
-      background: var(--task-bg-hover, rgba(255, 255, 255, 0.1));
-      border-color: rgba(255, 255, 255, 0.16);
+      transform: translateY(-2px);
+      box-shadow: 0 28px 50px rgba(0, 0, 0, 0.5);
+      border-color: var(--task-outline, rgba(255, 255, 255, 0.24));
+      background:
+        linear-gradient(135deg, var(--task-tint-strong, rgba(255, 255, 255, 0.2)), var(--task-tint-soft, rgba(255, 255, 255, 0.08))),
+        rgba(18, 18, 28, 0.88);
     }
 
     .task-card:active {
       cursor: grabbing;
       transform: scale(0.99);
-      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.35);
-    }
-
-    .task-card.is-dragging {
-      opacity: 0.6;
-      transform: scale(0.97);
       box-shadow: 0 18px 32px rgba(0, 0, 0, 0.45);
     }
 
+    .task-card.is-dragging {
+      opacity: 0.65;
+      transform: scale(0.97);
+      box-shadow: 0 22px 38px rgba(0, 0, 0, 0.5);
+    }
+
     .task-card.mission-critical {
-      border-color: rgba(255, 196, 0, 0.85);
-      box-shadow: 0 0 0 2px rgba(255, 196, 0, 0.45),
-                  0 12px 24px rgba(255, 196, 0, 0.18);
-      background:
-        linear-gradient(135deg, rgba(255, 196, 0, 0.16), rgba(255, 196, 0, 0.04)),
-        var(--task-bg, rgba(255, 255, 255, 0.07));
-    }
-
-    .task-card.mission-critical:hover {
-      border-color: rgba(255, 214, 64, 0.95);
-      box-shadow: 0 0 0 2px rgba(255, 214, 64, 0.6),
-                  0 14px 28px rgba(255, 214, 64, 0.24);
-    }
-
-    .task-card.mission-critical .task-dot {
-      box-shadow: 0 0 0 3px rgba(255, 196, 0, 0.4);
+      border-color: rgba(255, 214, 64, 0.85);
+      box-shadow: 0 0 0 1px rgba(255, 196, 0, 0.45),
+                  0 26px 46px rgba(255, 196, 0, 0.18);
     }
 
     .task-title {
       font-weight: 600;
-      font-size: 14px;
+      font-size: 15px;
       display: flex;
-      align-items: flex-start;
-      gap: 10px;
-      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: nowrap;
+      position: relative;
+      z-index: 1;
     }
 
     .task-title .task-name {
@@ -694,58 +741,72 @@
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
+      letter-spacing: 0.01em;
     }
 
     .task-time {
       font-size: 12px;
-      color: var(--muted);
+      color: rgba(255, 255, 255, 0.68);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
       margin-left: auto;
     }
 
     .task-dot {
-      width: 10px;
-      height: 10px;
+      width: 12px;
+      height: 12px;
       border-radius: 50%;
       flex-shrink: 0;
-      box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.08);
+      background: var(--task-dot, rgba(255, 255, 255, 0.65));
+      box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.12);
     }
 
     .task-meta {
-      display: none;
+      display: flex;
       flex-direction: column;
       align-items: flex-start;
-      gap: 6px;
+      gap: 8px;
       font-size: 12px;
-      color: var(--muted);
+      color: rgba(255, 255, 255, 0.68);
       width: 100%;
+      position: relative;
+      z-index: 1;
     }
 
-    .task-chip-row {
+    .task-detail-row {
       display: flex;
       flex-wrap: wrap;
-      gap: 6px;
+      gap: 10px;
     }
 
-    .day:is(:hover, .drag-over, .show-flyout) .task-meta {
-      display: flex;
-    }
-
-    .task-chip {
-      padding: 3px 10px;
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.1);
-      color: var(--muted);
+    .task-detail {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: rgba(255, 255, 255, 0.6);
     }
 
-    .task-notes-preview {
+    .task-detail:not(:first-child)::before {
+      content: '•';
+      margin-right: 8px;
+      color: rgba(255, 255, 255, 0.35);
+    }
+
+    .task-detail.mission-critical {
+      color: rgba(255, 214, 64, 0.92);
+      text-shadow: 0 0 12px rgba(255, 214, 64, 0.35);
+    }
+
+    .task-note-line {
       max-width: 100%;
       white-space: normal;
       overflow: hidden;
       text-overflow: ellipsis;
-      line-height: 1.35;
+      line-height: 1.45;
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.78);
     }
 
     .day.today {
@@ -777,9 +838,10 @@
     .focus-badges {
       display: none;
       flex-wrap: wrap;
-      gap: 6px;
+      gap: 10px;
+      align-items: center;
       font-size: 11px;
-      margin-bottom: 6px;
+      letter-spacing: 0.08em;
     }
 
     .focus-badges.active {
@@ -789,19 +851,28 @@
     .focus-badge {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      padding: 4px 10px;
+      gap: 8px;
+      padding: 6px 16px;
       border-radius: 999px;
-      background: rgba(255, 255, 255, 0.07);
-      color: var(--muted);
+      background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.04));
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      color: var(--text);
       cursor: pointer;
-      transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, color 0.2s ease;
+      box-shadow: 0 20px 36px rgba(0, 0, 0, 0.4);
     }
 
     .focus-badge:hover,
     .focus-badge:focus-visible {
-      background: rgba(255, 255, 255, 0.14);
+      background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0.08));
       color: var(--text);
+      transform: translateY(-1px);
+      box-shadow: 0 26px 44px rgba(0, 0, 0, 0.48);
       outline: none;
     }
 
@@ -810,6 +881,7 @@
       height: 8px;
       border-radius: 50%;
       display: inline-flex;
+      box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.14);
     }
 
     .day-progress {
@@ -1509,9 +1581,16 @@
     }
 
     function clearFocusSelectionHighlights() {
-      calendarGridEl.querySelectorAll('.day.focus-range').forEach((cell) => {
-        cell.classList.remove('focus-range');
-      });
+      if (calendarGridEl) {
+        calendarGridEl.querySelectorAll('.day.focus-range').forEach((cell) => {
+          cell.classList.remove('focus-range');
+        });
+      }
+      if (yearViewEl) {
+        yearViewEl.querySelectorAll('.mini-day.focus-range').forEach((cell) => {
+          cell.classList.remove('focus-range');
+        });
+      }
     }
 
     function updateFocusSelectionHighlight() {
@@ -1524,9 +1603,13 @@
       const cursor = new Date(startDate);
       while (cursor <= endDate) {
         const key = formatDateKey(cursor);
-        const cell = calendarGridEl.querySelector(`.day[data-date="${key}"]`);
+        const cell = calendarGridEl?.querySelector(`.day[data-date="${key}"]`);
         if (cell) {
           cell.classList.add('focus-range');
+        }
+        const miniCell = yearViewEl?.querySelector(`.mini-day[data-date="${key}"]`);
+        if (miniCell) {
+          miniCell.classList.add('focus-range');
         }
         cursor.setDate(cursor.getDate() + 1);
       }
@@ -1923,6 +2006,7 @@
 
           const date = new Date(year, month, dayNumber);
           const dateKey = formatDateKey(date);
+          cell.dataset.date = dateKey;
           const weekday = date.getDay();
           if (weekday === 0 || weekday === 6) {
             cell.classList.add('weekend');
@@ -1931,26 +2015,51 @@
             cell.classList.add('today');
           }
 
-          cell.textContent = dayNumber;
+          const number = document.createElement('span');
+          number.className = 'mini-day-number';
+          number.textContent = dayNumber;
+          cell.appendChild(number);
 
           const activeProjects = state.projects.filter((project) => project.start <= dateKey && project.end >= dateKey);
           if (activeProjects.length) {
-            const dots = document.createElement('div');
-            dots.className = 'mini-focus-dots';
-            activeProjects.slice(0, 3).forEach((project) => {
-              const dot = document.createElement('span');
-              dot.className = 'mini-focus-dot';
-              dot.style.background = project.color;
-              dots.appendChild(dot);
+            const stack = document.createElement('div');
+            stack.className = 'mini-focus-stack';
+            activeProjects.forEach((project) => {
+              const block = document.createElement('button');
+              block.type = 'button';
+              block.className = 'mini-focus-block';
+              block.style.setProperty('--mini-focus-strong', hexToRgba(project.color, 0.45));
+              block.style.setProperty('--mini-focus-soft', hexToRgba(project.color, 0.12));
+              block.style.setProperty('--mini-focus-border', hexToRgba(project.color, 0.6));
+              block.title = project.name;
+              block.setAttribute('aria-label', project.name);
+              block.addEventListener('click', (event) => {
+                event.stopPropagation();
+                if (event.shiftKey) return;
+                openFocusModal(project);
+              });
+              block.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault();
+                  openFocusModal(project);
+                }
+              });
+              stack.appendChild(block);
             });
-            if (activeProjects.length > 3) {
-              const overflow = document.createElement('span');
-              overflow.className = 'mini-focus-dot';
-              overflow.style.background = 'rgba(255, 255, 255, 0.4)';
-              dots.appendChild(overflow);
-            }
-            cell.appendChild(dots);
+            cell.appendChild(stack);
           }
+
+          cell.addEventListener('pointerdown', (event) => {
+            if (event.button !== 0 || !event.shiftKey) return;
+            event.preventDefault();
+            startFocusSelection(dateKey, event.pointerId);
+          });
+
+          cell.addEventListener('pointerenter', () => {
+            if (!focusSelection) return;
+            focusSelection.current = dateKey;
+            updateFocusSelectionHighlight();
+          });
 
           grid.appendChild(cell);
         }
@@ -2182,8 +2291,13 @@
             previewBar.style.background = hexToRgba(shadeColor, 0.85);
             preview.appendChild(previewBar);
 
-            taskCard.style.setProperty('--task-bg', hexToRgba(shadeColor, 0.22));
-            taskCard.style.setProperty('--task-bg-hover', hexToRgba(shadeColor, 0.28));
+            const tintStrong = hexToRgba(shadeColor, 0.38);
+            const tintSoft = hexToRgba(shadeColor, 0.14);
+            const outlineColor = task.missionCritical ? 'rgba(255, 196, 0, 0.85)' : hexToRgba(shadeColor, 0.55);
+            taskCard.style.setProperty('--task-tint-strong', tintStrong);
+            taskCard.style.setProperty('--task-tint-soft', tintSoft);
+            taskCard.style.setProperty('--task-outline', outlineColor);
+            taskCard.style.setProperty('--task-dot', shadeColor);
 
             if (task.missionCritical) {
               taskCard.classList.add('mission-critical');
@@ -2230,43 +2344,43 @@
 
             const meta = document.createElement('div');
             meta.className = 'task-meta';
-            const chipRow = document.createElement('div');
-            chipRow.className = 'task-chip-row';
+            const detailRow = document.createElement('div');
+            detailRow.className = 'task-detail-row';
 
             if (category) {
-              const categoryChip = document.createElement('span');
-              categoryChip.className = 'task-chip';
-              categoryChip.textContent = category.name;
-              chipRow.appendChild(categoryChip);
+              const categoryDetail = document.createElement('span');
+              categoryDetail.className = 'task-detail';
+              categoryDetail.textContent = category.name;
+              detailRow.appendChild(categoryDetail);
             }
 
             const durationValue = Number(task.duration);
             if (!Number.isNaN(durationValue) && durationValue > 0) {
-              const durationChip = document.createElement('span');
-              durationChip.className = 'task-chip';
+              const durationDetail = document.createElement('span');
+              durationDetail.className = 'task-detail';
               const formatted = Number.isInteger(durationValue) ? `${durationValue}h` : `${durationValue.toFixed(1)}h`;
-              durationChip.textContent = `Duration ${formatted}`;
-              chipRow.appendChild(durationChip);
+              durationDetail.textContent = `Duration ${formatted}`;
+              detailRow.appendChild(durationDetail);
             }
 
             if (task.missionCritical) {
-              const missionChip = document.createElement('span');
-              missionChip.className = 'task-chip';
-              missionChip.textContent = 'Mission critical';
-              chipRow.appendChild(missionChip);
+              const missionDetail = document.createElement('span');
+              missionDetail.className = 'task-detail mission-critical';
+              missionDetail.textContent = 'Mission critical';
+              detailRow.appendChild(missionDetail);
             }
 
-            if (chipRow.children.length) {
-              meta.appendChild(chipRow);
+            if (detailRow.children.length) {
+              meta.appendChild(detailRow);
             }
 
             if (task.notes) {
               const firstLine = task.notes.split(/\r?\n/)[0].trim();
               if (firstLine) {
-                const notesPreview = document.createElement('div');
-                notesPreview.className = 'task-notes-preview';
-                notesPreview.textContent = firstLine;
-                meta.appendChild(notesPreview);
+                const notesLine = document.createElement('div');
+                notesLine.className = 'task-note-line';
+                notesLine.textContent = firstLine;
+                meta.appendChild(notesLine);
               }
             }
 
