@@ -38,7 +38,8 @@
       line-height: 1.4;
       padding: 40px clamp(24px, 5vw, 72px);
       display: flex;
-      justify-content: flex-start;
+      justify-content: center;
+      align-items: flex-start;
     }
 
     .app-shell {
@@ -400,21 +401,81 @@
       pointer-events: none;
     }
 
-    .month-tag {
+    .time-picker {
       position: relative;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 16px;
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.08);
-      backdrop-filter: blur(6px);
-      font-size: 13px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.18em;
+      display: grid;
+      gap: 6px;
+      padding: 12px;
+      border-radius: var(--radius-md);
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      max-height: 220px;
+      overflow-y: auto;
+      scroll-snap-type: y mandatory;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    }
+
+    .time-picker:focus {
+      outline: 2px solid rgba(106, 90, 205, 0.65);
+      outline-offset: 2px;
+    }
+
+    .time-option {
+      appearance: none;
+      border: none;
+      background: transparent;
       color: var(--text);
-      z-index: 1;
+      font: inherit;
+      font-size: 18px;
+      letter-spacing: 0.04em;
+      padding: 12px 16px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      text-align: left;
+      scroll-snap-align: center;
+      transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .time-option:hover,
+    .time-option:focus-visible {
+      background: rgba(255, 255, 255, 0.12);
+      transform: translateY(-1px);
+      box-shadow: 0 10px 22px rgba(0, 0, 0, 0.28);
+      outline: none;
+    }
+
+    .time-option.selected {
+      background: linear-gradient(135deg, rgba(106, 90, 205, 0.4), rgba(106, 90, 205, 0.15));
+      box-shadow: 0 18px 30px rgba(106, 90, 205, 0.25);
+    }
+
+    .time-option[data-value=''] {
+      font-size: 15px;
+      color: rgba(255, 255, 255, 0.72);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+
+    .mini-tooltip {
+      position: fixed;
+      z-index: 2000;
+      padding: 8px 12px;
+      border-radius: 10px;
+      background: rgba(21, 21, 31, 0.94);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: var(--text);
+      font-size: 12px;
+      letter-spacing: 0.05em;
+      pointer-events: none;
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.4);
+      opacity: 0;
+      transform: translate(-50%, -12px);
+      transition: opacity 0.15s ease;
+      white-space: pre-line;
+    }
+
+    .mini-tooltip.visible {
+      opacity: 1;
     }
 
     .weekday-row {
@@ -1149,8 +1210,9 @@
           <input type="hidden" id="new-category-color" name="newCategoryColor">
         </div>
         <div class="field">
-          <label for="task-start">Start time</label>
-          <select id="task-start" name="start"></select>
+          <label>Start time</label>
+          <div class="time-picker" id="task-start-picker" role="listbox" tabindex="0" aria-label="Start time"></div>
+          <input type="hidden" id="task-start" name="start">
         </div>
         <div class="field">
           <label for="task-duration">Time allocation</label>
@@ -1431,16 +1493,61 @@
       return parts.length ? parts.join(' ') : '0m';
     }
 
-    function ensureStartTimeOption(value) {
-      if (!taskStartInput || !value) return;
-      const exists = Array.from(taskStartInput.options).some((option) => option.value === value);
-      if (!exists) {
-        const option = document.createElement('option');
-        option.value = value;
-        option.textContent = value;
-        option.dataset.custom = 'true';
-        taskStartInput.appendChild(option);
+    function createTimeOption(value, label) {
+      const option = document.createElement('button');
+      option.type = 'button';
+      option.className = 'time-option';
+      option.dataset.value = value;
+      option.textContent = label;
+      option.setAttribute('role', 'option');
+      option.setAttribute('aria-selected', 'false');
+      option.addEventListener('click', () => {
+        setTimePickerSelection(value, { scrollIntoView: true, focusOption: true });
+      });
+      option.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          setTimePickerSelection(value, { scrollIntoView: true, focusOption: true });
+        }
+      });
+      return option;
+    }
+
+    function getTimeOptions() {
+      if (!taskStartPicker) return [];
+      return Array.from(taskStartPicker.querySelectorAll('.time-option'));
+    }
+
+    function setTimePickerSelection(value, { scrollIntoView = false, focusOption = false } = {}) {
+      if (!taskStartPicker || !taskStartInput) return;
+      const normalized = value || '';
+      taskStartInput.value = normalized;
+      let targetOption = null;
+      getTimeOptions().forEach((option) => {
+        const isMatch = option.dataset.value === normalized;
+        option.classList.toggle('selected', isMatch);
+        option.setAttribute('aria-selected', isMatch ? 'true' : 'false');
+        if (isMatch) {
+          targetOption = option;
+        }
+      });
+      if (scrollIntoView && targetOption) {
+        targetOption.scrollIntoView({ block: 'center', behavior: 'smooth' });
       }
+      if (focusOption && targetOption) {
+        targetOption.focus();
+      }
+    }
+
+    function ensureStartTimeOption(value) {
+      if (!taskStartPicker || !value) return;
+      let option = taskStartPicker.querySelector(`.time-option[data-value="${value}"]`);
+      if (!option) {
+        option = createTimeOption(value, value);
+        option.dataset.custom = 'true';
+        taskStartPicker.appendChild(option);
+      }
+      return option;
     }
 
     function ensureDurationOption(value) {
@@ -1456,19 +1563,59 @@
       }
     }
 
-    function populateStartTimeSelect() {
-      if (!taskStartInput) return;
-      taskStartInput.innerHTML = '';
-      const empty = document.createElement('option');
-      empty.value = '';
-      empty.textContent = 'No start time';
-      taskStartInput.appendChild(empty);
+    function handleTimePickerContainerFocus(event) {
+      if (event.target !== taskStartPicker) return;
+      const selected = taskStartPicker.querySelector('.time-option.selected');
+      if (selected) {
+        selected.focus();
+      } else {
+        const first = taskStartPicker.querySelector('.time-option');
+        first?.focus();
+      }
+    }
+
+    function handleTimePickerKeydown(event) {
+      const options = getTimeOptions();
+      if (!options.length) return;
+      const currentValue = taskStartInput?.value || '';
+      let index = options.findIndex((option) => option.dataset.value === currentValue);
+      if (index === -1) index = 0;
+      if (event.key === 'ArrowDown') {
+        event.preventDefault();
+        index = Math.min(options.length - 1, index + 1);
+        const next = options[index];
+        setTimePickerSelection(next.dataset.value, { scrollIntoView: true, focusOption: true });
+      } else if (event.key === 'ArrowUp') {
+        event.preventDefault();
+        index = Math.max(0, index - 1);
+        const next = options[index];
+        setTimePickerSelection(next.dataset.value, { scrollIntoView: true, focusOption: true });
+      } else if (event.key === 'Home') {
+        event.preventDefault();
+        const next = options[0];
+        setTimePickerSelection(next.dataset.value, { scrollIntoView: true, focusOption: true });
+      } else if (event.key === 'End') {
+        event.preventDefault();
+        const next = options[options.length - 1];
+        setTimePickerSelection(next.dataset.value, { scrollIntoView: true, focusOption: true });
+      }
+    }
+
+    function buildStartTimePicker() {
+      if (!taskStartPicker) return;
+      const wasInitialised = taskStartPicker.dataset.initialized === 'true';
+      taskStartPicker.innerHTML = '';
+      const emptyOption = createTimeOption('', 'No start time');
+      taskStartPicker.appendChild(emptyOption);
       startTimeOptions.forEach((time) => {
-        const option = document.createElement('option');
-        option.value = time;
-        option.textContent = time;
-        taskStartInput.appendChild(option);
+        taskStartPicker.appendChild(createTimeOption(time, time));
       });
+      if (!wasInitialised) {
+        taskStartPicker.addEventListener('focus', handleTimePickerContainerFocus);
+        taskStartPicker.addEventListener('keydown', handleTimePickerKeydown);
+        taskStartPicker.dataset.initialized = 'true';
+      }
+      setTimePickerSelection(taskStartInput?.value || '', { scrollIntoView: false });
     }
 
     function populateDurationSelect() {
@@ -1516,96 +1663,6 @@
       return `rgba(${r}, ${g}, ${b}, ${alpha})`;
     }
 
-    function hexToRgb(hex) {
-      if (!hex || typeof hex !== 'string') return null;
-      const stripped = hex.replace('#', '');
-      const normalized = stripped.length === 3
-        ? stripped.split('').map((c) => c + c).join('')
-        : stripped;
-      if (normalized.length !== 6) return null;
-      const bigint = parseInt(normalized, 16);
-      if (Number.isNaN(bigint)) return null;
-      return {
-        r: (bigint >> 16) & 255,
-        g: (bigint >> 8) & 255,
-        b: bigint & 255
-      };
-    }
-
-    function rgbToHex(r, g, b) {
-      const toHex = (value) => {
-        const clamped = Math.max(0, Math.min(255, Math.round(value)));
-        return clamped.toString(16).padStart(2, '0');
-      };
-      return `#${toHex(r)}${toHex(g)}${toHex(b)}`.toUpperCase();
-    }
-
-    function rgbToHsl(r, g, b) {
-      r /= 255;
-      g /= 255;
-      b /= 255;
-      const max = Math.max(r, g, b);
-      const min = Math.min(r, g, b);
-      let h = 0;
-      let s = 0;
-      const l = (max + min) / 2;
-      if (max !== min) {
-        const d = max - min;
-        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-        switch (max) {
-          case r:
-            h = (g - b) / d + (g < b ? 6 : 0);
-            break;
-          case g:
-            h = (b - r) / d + 2;
-            break;
-          case b:
-            h = (r - g) / d + 4;
-            break;
-        }
-        h /= 6;
-      }
-      return { h, s, l };
-    }
-
-    function hslToRgb(h, s, l) {
-      if (s === 0) {
-        const value = l * 255;
-        return [value, value, value];
-      }
-      const hue2rgb = (p, q, t) => {
-        if (t < 0) t += 1;
-        if (t > 1) t -= 1;
-        if (t < 1 / 6) return p + (q - p) * 6 * t;
-        if (t < 1 / 2) return q;
-        if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
-        return p;
-      };
-      const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
-      const p = 2 * l - q;
-      const r = hue2rgb(p, q, h + 1 / 3);
-      const g = hue2rgb(p, q, h);
-      const b = hue2rgb(p, q, h - 1 / 3);
-      return [r * 255, g * 255, b * 255];
-    }
-
-    function clamp(value, min, max) {
-      return Math.min(max, Math.max(min, value));
-    }
-
-    function shadeColorByDuration(hex, duration) {
-      const rgb = hexToRgb(hex);
-      if (!rgb) return '#6A5ACD';
-      const { h, s, l } = rgbToHsl(rgb.r, rgb.g, rgb.b);
-      const minutes = Math.max(0, Number(duration) || 0);
-      const hours = minutes / 60;
-      const normalized = clamp(hours / 6, 0, 1);
-      const darkening = normalized * 0.3;
-      const lightenBoost = hours === 0 ? 0.12 : 0;
-      const targetLightness = clamp(l - darkening + lightenBoost, 0.2, 0.78);
-      const [nr, ng, nb] = hslToRgb(h, s, targetLightness);
-      return rgbToHex(nr, ng, nb);
-    }
 
     const calendarGridEl = document.getElementById('calendar-grid');
     const yearViewEl = document.getElementById('year-view');
@@ -1626,6 +1683,7 @@
     const categoryColorOptions = document.getElementById('category-color-options');
     const missionCriticalInput = document.getElementById('task-mission-critical');
     const taskTitleInput = document.getElementById('task-title');
+    const taskStartPicker = document.getElementById('task-start-picker');
     const taskStartInput = document.getElementById('task-start');
     const taskDurationInput = document.getElementById('task-duration');
     const taskNotesInput = document.getElementById('task-notes');
@@ -1642,7 +1700,47 @@
     const focusDeleteBtn = document.getElementById('focus-delete');
     const focusCancelBtn = document.getElementById('focus-cancel');
 
-    populateStartTimeSelect();
+    const miniTooltip = document.createElement('div');
+    miniTooltip.className = 'mini-tooltip';
+    document.body.appendChild(miniTooltip);
+    let miniTooltipVisible = false;
+
+    if (yearViewEl) {
+      yearViewEl.addEventListener('scroll', hideMiniTooltip);
+    }
+    window.addEventListener('scroll', hideMiniTooltip, true);
+    window.addEventListener('resize', hideMiniTooltip);
+
+    function hideMiniTooltip() {
+      if (!miniTooltipVisible) return;
+      miniTooltip.classList.remove('visible');
+      miniTooltipVisible = false;
+    }
+
+    function positionMiniTooltip(x, y) {
+      const safeX = Math.max(16, Math.min(window.innerWidth - 16, x));
+      const safeY = Math.max(16, y - 18);
+      miniTooltip.style.left = `${safeX}px`;
+      miniTooltip.style.top = `${safeY}px`;
+    }
+
+    function updateMiniTooltipPosition(x, y) {
+      if (!miniTooltipVisible) return;
+      positionMiniTooltip(x, y);
+    }
+
+    function showMiniTooltip(text, x, y) {
+      if (!text) {
+        hideMiniTooltip();
+        return;
+      }
+      miniTooltip.textContent = text;
+      positionMiniTooltip(x, y);
+      miniTooltip.classList.add('visible');
+      miniTooltipVisible = true;
+    }
+
+    buildStartTimePicker();
     populateDurationSelect();
 
     renderCategoryColorOptions();
@@ -1929,7 +2027,7 @@
       if (startValue) {
         ensureStartTimeOption(startValue);
       }
-      taskStartInput.value = startValue;
+      setTimePickerSelection(startValue, { scrollIntoView: Boolean(startValue) });
       const durationValue = typeof task?.duration === 'number' && task.duration > 0 ? task.duration : '';
       if (durationValue !== '') {
         ensureDurationOption(durationValue);
@@ -2059,6 +2157,7 @@
     function renderYearOverview() {
       if (!yearViewEl) return;
       yearViewEl.innerHTML = '';
+      hideMiniTooltip();
       const months = buildMonthSequence();
       const realTodayKey = formatDateKey(new Date());
 
@@ -2120,7 +2219,6 @@
 
           const activeProjects = state.projects.filter((project) => project.start <= dateKey && project.end >= dateKey);
           if (activeProjects.length) {
-            cell.title = activeProjects.map((project) => project.name).join('\n');
             const stack = document.createElement('div');
             stack.className = 'mini-focus-stack';
             activeProjects.forEach((project) => {
@@ -2135,11 +2233,13 @@
               block.addEventListener('click', (event) => {
                 event.stopPropagation();
                 if (event.shiftKey) return;
+                hideMiniTooltip();
                 openFocusModal(project);
               });
               block.addEventListener('keydown', (event) => {
                 if (event.key === 'Enter' || event.key === ' ') {
                   event.preventDefault();
+                  hideMiniTooltip();
                   openFocusModal(project);
                 }
               });
@@ -2148,9 +2248,21 @@
             cell.appendChild(stack);
           }
 
-          if (!activeProjects.length) {
-            cell.removeAttribute('title');
-          }
+          const focusTooltipText = activeProjects.map((project) => project.name).join('\n');
+
+          cell.addEventListener('mouseenter', (event) => {
+            if (cell.classList.contains('empty') || !focusTooltipText) {
+              hideMiniTooltip();
+              return;
+            }
+            showMiniTooltip(focusTooltipText, event.clientX, event.clientY);
+          });
+
+          cell.addEventListener('mousemove', (event) => {
+            updateMiniTooltipPosition(event.clientX, event.clientY);
+          });
+
+          cell.addEventListener('mouseleave', hideMiniTooltip);
 
           cell.addEventListener('click', (event) => {
             if (cell.classList.contains('empty')) return;
@@ -2158,7 +2270,7 @@
             if (event.detail > 1) return;
             event.preventDefault();
             scrollMainCalendarToMonth(year, month, { smooth: true });
-            openFocusModal(null, { start: dateKey, end: dateKey });
+            hideMiniTooltip();
           });
 
           cell.addEventListener('dblclick', (event) => {
@@ -2166,6 +2278,13 @@
             if (event.target.closest('.mini-focus-block')) return;
             event.preventDefault();
             scrollMainCalendarToMonth(year, month, { smooth: false });
+            hideMiniTooltip();
+            const projectToEdit = activeProjects[0] || null;
+            if (projectToEdit) {
+              openFocusModal(projectToEdit);
+            } else {
+              openFocusModal(null, { start: dateKey, end: dateKey });
+            }
           });
 
           cell.addEventListener('pointerdown', (event) => {
@@ -2276,10 +2395,6 @@
         overlayLabel.className = 'month-label';
         overlayLabel.textContent = labelText;
         divider.appendChild(overlayLabel);
-        const tag = document.createElement('span');
-        tag.className = 'month-tag';
-        tag.textContent = labelText;
-        divider.appendChild(tag);
 
         monthBlock.appendChild(divider);
         monthBlock.appendChild(createWeekdayRow());
@@ -2415,12 +2530,19 @@
 
           cell.appendChild(overlayStack);
 
-          const taskList = document.createElement('div');
-          taskList.className = 'task-list';
-          const preview = document.createElement('div');
-          preview.className = 'task-preview';
-
           const tasks = (state.tasks[dateKey] || []).slice().sort(compareTasks);
+          const hasTasks = tasks.length > 0;
+
+          let taskList = null;
+          let preview = null;
+
+          if (hasTasks) {
+            taskList = document.createElement('div');
+            taskList.className = 'task-list';
+            preview = document.createElement('div');
+            preview.className = 'task-preview';
+          }
+
           tasks.forEach((task) => {
             const taskCard = document.createElement('div');
             taskCard.className = 'task-card';
@@ -2430,20 +2552,20 @@
             const category = getCategoryByName(task.category) || ensureGeneralCategoryExists();
             const baseColor = category?.color || '#6A5ACD';
             const durationMinutes = Math.max(0, Number(task.duration) || 0);
-            const shadeColor = shadeColorByDuration(baseColor, durationMinutes);
+            const taskColor = baseColor;
 
             const previewBar = document.createElement('div');
             previewBar.className = 'task-preview-bar';
-            previewBar.style.background = hexToRgba(shadeColor, 0.85);
+            previewBar.style.background = hexToRgba(taskColor, 0.85);
             preview.appendChild(previewBar);
 
-            const tintStrong = hexToRgba(shadeColor, 0.38);
-            const tintSoft = hexToRgba(shadeColor, 0.14);
-            const outlineColor = task.missionCritical ? 'rgba(255, 196, 0, 0.85)' : hexToRgba(shadeColor, 0.55);
+            const tintStrong = hexToRgba(taskColor, 0.38);
+            const tintSoft = hexToRgba(taskColor, 0.14);
+            const outlineColor = task.missionCritical ? 'rgba(255, 196, 0, 0.85)' : hexToRgba(taskColor, 0.55);
             taskCard.style.setProperty('--task-tint-strong', tintStrong);
             taskCard.style.setProperty('--task-tint-soft', tintSoft);
             taskCard.style.setProperty('--task-outline', outlineColor);
-            taskCard.style.setProperty('--task-dot', shadeColor);
+            taskCard.style.setProperty('--task-dot', taskColor);
 
             if (task.missionCritical) {
               taskCard.classList.add('mission-critical');
@@ -2470,7 +2592,7 @@
 
             const colorDot = document.createElement('span');
             colorDot.className = 'task-dot';
-            colorDot.style.background = shadeColor;
+            colorDot.style.background = taskColor;
             title.appendChild(colorDot);
 
             const name = document.createElement('span');
@@ -2535,27 +2657,23 @@
             taskList.appendChild(taskCard);
           });
 
-          if (!tasks.length) {
-            const previewEmpty = document.createElement('div');
-            previewEmpty.className = 'task-preview-empty';
-            previewEmpty.textContent = 'No tasks yet';
-            preview.appendChild(previewEmpty);
+          let flyout = null;
 
-            const empty = document.createElement('div');
-            empty.className = 'empty-state';
-            empty.textContent = 'Drop tasks here';
-            taskList.appendChild(empty);
+          if (hasTasks && preview) {
+            cell.appendChild(preview);
           }
 
-          const flyout = document.createElement('div');
-          flyout.className = 'task-flyout';
-          if (activeProjects.length > 0) {
-            flyout.appendChild(focusBadges);
+          if (hasTasks && taskList) {
+            flyout = document.createElement('div');
+            flyout.className = 'task-flyout';
+            if (activeProjects.length > 0) {
+              flyout.appendChild(focusBadges);
+            }
+            flyout.appendChild(taskList);
+            cell.appendChild(flyout);
+          } else if (activeProjects.length > 0) {
+            cell.appendChild(focusBadges);
           }
-          flyout.appendChild(taskList);
-
-          cell.appendChild(preview);
-          cell.appendChild(flyout);
 
           if (realTodayKey === dateKey) {
             const progress = document.createElement('div');
@@ -2564,7 +2682,9 @@
           }
 
           monthGrid.appendChild(cell);
-          setupFlyoutHover(cell, flyout);
+          if (flyout) {
+            setupFlyoutHover(cell, flyout);
+          }
         }
 
         calendarGridEl.appendChild(monthBlock);
@@ -2578,9 +2698,11 @@
 
       if (!initialScrollCompleted) {
         initialScrollCompleted = true;
-        if (new Date().getFullYear() === viewDate.getFullYear()) {
-          setTimeout(() => scrollToToday(), 150);
-        }
+        const targetYear = viewDate.getFullYear();
+        const targetMonth = viewDate.getMonth();
+        requestAnimationFrame(() => {
+          scrollMainCalendarToMonth(targetYear, targetMonth, { smooth: false });
+        });
       }
     }
 
@@ -2615,6 +2737,8 @@
       initialScrollCompleted = false;
       initialMiniScrollCompleted = false;
       renderCalendar();
+      setTimeout(() => scrollToToday({ smooth: true }), 220);
+      hideMiniTooltip();
     });
 
     yearNavButtons.forEach((button) => {
@@ -2625,6 +2749,7 @@
         viewDate = new Date(targetYear, 0, 1);
         initialMiniScrollCompleted = false;
         renderCalendar();
+        hideMiniTooltip();
       });
     });
 
