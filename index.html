@@ -38,11 +38,11 @@
       line-height: 1.4;
       padding: 40px clamp(24px, 5vw, 72px);
       display: flex;
-      justify-content: center;
+      justify-content: flex-start;
     }
 
     .app-shell {
-      width: min(1200px, 100%);
+      width: min(1400px, 100%);
       display: flex;
       flex-direction: column;
       gap: 24px;
@@ -160,6 +160,178 @@
       flex-direction: column;
       gap: 56px;
       position: relative;
+    }
+
+    .calendar-layout {
+      display: flex;
+      gap: 28px;
+      align-items: flex-start;
+    }
+
+    .main-calendar {
+      flex: 1 1 auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .calendar-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .calendar-toolbar .year-label {
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .btn-icon {
+      padding: 10px;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      justify-content: center;
+    }
+
+    .btn-icon svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    .year-view-card {
+      flex: 0 0 clamp(260px, 26vw, 320px);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      position: sticky;
+      top: clamp(24px, 6vh, 56px);
+      max-height: calc(100vh - clamp(48px, 10vh, 120px));
+      overflow: hidden;
+    }
+
+    .year-view-scroll {
+      flex: 1 1 auto;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      overflow-y: auto;
+      padding-right: 6px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+    }
+
+    .year-view-scroll::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .year-view-scroll::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.24);
+      border-radius: 999px;
+    }
+
+    .mini-month {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .mini-month-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: rgba(255, 255, 255, 0.55);
+    }
+
+    .mini-month-header .mini-year {
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.38);
+      letter-spacing: 0.14em;
+    }
+
+    .mini-weekday-row {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 4px;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: rgba(255, 255, 255, 0.32);
+    }
+
+    .mini-grid {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 4px;
+    }
+
+    .mini-day {
+      position: relative;
+      aspect-ratio: 1 / 1;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .mini-day.weekend {
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .mini-day.empty {
+      background: transparent;
+      border-color: transparent;
+      color: transparent;
+    }
+
+    .mini-day.today {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(106, 90, 205, 0.45);
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .mini-focus-dots {
+      position: absolute;
+      bottom: 4px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: inline-flex;
+      gap: 3px;
+    }
+
+    .mini-focus-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2);
+    }
+
+    @media (max-width: 1180px) {
+      .calendar-layout {
+        flex-direction: column;
+      }
+
+      .year-view-card {
+        position: static;
+        max-height: none;
+        width: 100%;
+      }
+
+      .year-view-scroll {
+        max-height: none;
+      }
     }
 
     .month-block {
@@ -864,8 +1036,24 @@
       </div>
     </section>
 
-    <section class="calendar-card">
-      <div class="calendar-scroll" id="calendar-grid"></div>
+    <section class="calendar-layout">
+      <section class="calendar-card main-calendar">
+        <div class="calendar-toolbar">
+          <button type="button" class="btn btn-ghost btn-icon" data-year-nav="-1" aria-label="Previous year">&larr;</button>
+          <span class="year-label" data-year-label></span>
+          <button type="button" class="btn btn-ghost btn-icon" data-year-nav="1" aria-label="Next year">&rarr;</button>
+        </div>
+        <div class="calendar-scroll" id="calendar-grid"></div>
+      </section>
+
+      <aside class="calendar-card year-view-card">
+        <div class="calendar-toolbar">
+          <button type="button" class="btn btn-ghost btn-icon" data-year-nav="-1" aria-label="Previous year">&larr;</button>
+          <span class="year-label" data-year-label></span>
+          <button type="button" class="btn btn-ghost btn-icon" data-year-nav="1" aria-label="Next year">&rarr;</button>
+        </div>
+        <div class="year-view-scroll" id="year-view"></div>
+      </aside>
     </section>
   </div>
 
@@ -1266,6 +1454,9 @@
     }
 
     const calendarGridEl = document.getElementById('calendar-grid');
+    const yearViewEl = document.getElementById('year-view');
+    const yearLabels = document.querySelectorAll('[data-year-label]');
+    const yearNavButtons = document.querySelectorAll('[data-year-nav]');
     const currentDateEl = document.querySelector('.current-date');
     const currentTimeEl = document.querySelector('.current-time');
     const taskModalBackdrop = document.getElementById('task-modal');
@@ -1302,7 +1493,7 @@
 
     let state = loadState();
     ensureGeneralCategoryExists();
-    let today = new Date();
+    let viewDate = new Date();
 
     let editingTask = null;
     let editingDate = null;
@@ -1609,7 +1800,7 @@
         endField.value = project.end;
       } else {
         if (options.name) nameField.value = options.name;
-        const defaultDate = formatDateKey(today);
+        const defaultDate = formatDateKey(new Date());
         const startValue = options.start || defaultDate;
         const endValue = options.end || options.start || defaultDate;
         startField.value = startValue;
@@ -1649,41 +1840,9 @@
     }
 
     function computeCalendarBounds() {
-      const baselineStart = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-      const baselineEnd = new Date(today.getFullYear(), today.getMonth() + 3, 1);
-      let minDate = baselineStart;
-      let maxDate = baselineEnd;
-
-      Object.keys(state.tasks).forEach((dateKey) => {
-        const date = parseDateKey(dateKey);
-        if (!date || Number.isNaN(date.getTime())) return;
-        const monthStart = new Date(date.getFullYear(), date.getMonth(), 1);
-        if (monthStart < minDate) minDate = monthStart;
-        if (monthStart > maxDate) maxDate = monthStart;
-      });
-
-      state.projects.forEach((project) => {
-        if (!project) return;
-        if (project.start) {
-          const startDate = parseDateKey(project.start);
-          if (startDate && !Number.isNaN(startDate.getTime())) {
-            const startMonth = new Date(startDate.getFullYear(), startDate.getMonth(), 1);
-            if (startMonth < minDate) minDate = startMonth;
-          }
-        }
-        if (project.end) {
-          const endDate = parseDateKey(project.end);
-          if (endDate && !Number.isNaN(endDate.getTime())) {
-            const endMonth = new Date(endDate.getFullYear(), endDate.getMonth(), 1);
-            if (endMonth > maxDate) maxDate = endMonth;
-          }
-        }
-      });
-
-      const start = new Date(minDate);
-      start.setMonth(start.getMonth() - 1);
-      const end = new Date(maxDate);
-      end.setMonth(end.getMonth() + 1);
+      const anchorYear = viewDate.getFullYear();
+      const start = new Date(anchorYear, 0, 1);
+      const end = new Date(anchorYear, 11, 31);
       return { start, end };
     }
 
@@ -1697,6 +1856,107 @@
         cursor.setMonth(cursor.getMonth() + 1);
       }
       return months;
+    }
+
+    function updateYearLabels() {
+      const year = viewDate.getFullYear();
+      yearLabels.forEach((label) => {
+        label.textContent = year;
+      });
+    }
+
+    function createMiniWeekdayRow() {
+      const row = document.createElement('div');
+      row.className = 'mini-weekday-row';
+      const labels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+      labels.forEach((label) => {
+        const span = document.createElement('span');
+        span.textContent = label;
+        row.appendChild(span);
+      });
+      return row;
+    }
+
+    function renderYearOverview() {
+      if (!yearViewEl) return;
+      yearViewEl.innerHTML = '';
+      const months = buildMonthSequence();
+      const realTodayKey = formatDateKey(new Date());
+
+      months.forEach(({ year, month }) => {
+        const container = document.createElement('div');
+        container.className = 'mini-month';
+
+        const header = document.createElement('div');
+        header.className = 'mini-month-header';
+        const monthLabel = document.createElement('span');
+        const labelDate = new Date(year, month, 1);
+        monthLabel.textContent = labelDate.toLocaleDateString(undefined, { month: 'long' });
+        const yearLabel = document.createElement('span');
+        yearLabel.className = 'mini-year';
+        yearLabel.textContent = labelDate.toLocaleDateString(undefined, { year: 'numeric' });
+        header.appendChild(monthLabel);
+        header.appendChild(yearLabel);
+        container.appendChild(header);
+
+        container.appendChild(createMiniWeekdayRow());
+
+        const grid = document.createElement('div');
+        grid.className = 'mini-grid';
+        container.appendChild(grid);
+
+        const firstDay = new Date(year, month, 1);
+        const startWeekday = (firstDay.getDay() + 6) % 7;
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        const totalCells = Math.ceil((startWeekday + daysInMonth) / 7) * 7;
+
+        for (let i = 0; i < totalCells; i++) {
+          const cell = document.createElement('div');
+          cell.className = 'mini-day';
+
+          const dayNumber = i - startWeekday + 1;
+          if (dayNumber < 1 || dayNumber > daysInMonth) {
+            cell.classList.add('empty');
+            grid.appendChild(cell);
+            continue;
+          }
+
+          const date = new Date(year, month, dayNumber);
+          const dateKey = formatDateKey(date);
+          const weekday = date.getDay();
+          if (weekday === 0 || weekday === 6) {
+            cell.classList.add('weekend');
+          }
+          if (dateKey === realTodayKey) {
+            cell.classList.add('today');
+          }
+
+          cell.textContent = dayNumber;
+
+          const activeProjects = state.projects.filter((project) => project.start <= dateKey && project.end >= dateKey);
+          if (activeProjects.length) {
+            const dots = document.createElement('div');
+            dots.className = 'mini-focus-dots';
+            activeProjects.slice(0, 3).forEach((project) => {
+              const dot = document.createElement('span');
+              dot.className = 'mini-focus-dot';
+              dot.style.background = project.color;
+              dots.appendChild(dot);
+            });
+            if (activeProjects.length > 3) {
+              const overflow = document.createElement('span');
+              overflow.className = 'mini-focus-dot';
+              overflow.style.background = 'rgba(255, 255, 255, 0.4)';
+              dots.appendChild(overflow);
+            }
+            cell.appendChild(dots);
+          }
+
+          grid.appendChild(cell);
+        }
+
+        yearViewEl.appendChild(container);
+      });
     }
 
     function getTaskTimeRange(task) {
@@ -2052,12 +2312,17 @@
         calendarGridEl.appendChild(monthBlock);
       });
 
+      renderYearOverview();
+      updateYearLabels();
+
       updateCurrentTime();
       updateFocusSelectionHighlight();
 
       if (!initialScrollCompleted) {
         initialScrollCompleted = true;
-        setTimeout(() => scrollToToday(), 150);
+        if (new Date().getFullYear() === viewDate.getFullYear()) {
+          setTimeout(() => scrollToToday(), 150);
+        }
       }
     }
 
@@ -2088,9 +2353,19 @@
     }
 
     document.getElementById('reset-calendar').addEventListener('click', () => {
-      today = new Date();
+      viewDate = new Date();
+      initialScrollCompleted = false;
       renderCalendar();
-      setTimeout(() => scrollToToday(), 150);
+    });
+
+    yearNavButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        const delta = Number(button.dataset.yearNav);
+        if (Number.isNaN(delta)) return;
+        const targetYear = viewDate.getFullYear() + delta;
+        viewDate = new Date(targetYear, 0, 1);
+        renderCalendar();
+      });
     });
 
     document.getElementById('add-focus').addEventListener('click', () => {
