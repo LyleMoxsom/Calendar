@@ -21,6 +21,7 @@
       --radius-lg: 22px;
       --radius-md: 16px;
       --radius-sm: 12px;
+      --timeline-hour-height: 20px;
     }
 
     * {
@@ -762,7 +763,7 @@
       left: 50%;
       transform: translate(-50%, 12px);
       width: clamp(260px, 32vw, 360px);
-      max-height: clamp(220px, 52vh, 480px);
+      max-height: clamp(320px, 65vh, 700px);
       padding: 20px;
       border-radius: var(--radius-lg);
       border: 1px solid rgba(255, 255, 255, 0.16);
@@ -778,6 +779,163 @@
       z-index: 40;
     }
 
+    .day-timeline {
+      display: grid;
+      grid-template-columns: 52px 1fr;
+      align-items: stretch;
+      gap: 16px;
+    }
+
+    .timeline-hours {
+      position: relative;
+      display: grid;
+      grid-template-rows: repeat(24, 1fr);
+      height: calc(var(--timeline-hour-height) * 24);
+      font-size: 11px;
+      font-variant-numeric: tabular-nums;
+      color: rgba(255, 255, 255, 0.45);
+      text-align: right;
+      padding-right: 6px;
+      pointer-events: none;
+    }
+
+    .timeline-hours span {
+      position: relative;
+      top: -5px;
+    }
+
+    .timeline-track {
+      position: relative;
+      height: calc(var(--timeline-hour-height) * 24);
+      border-radius: var(--radius-md);
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      overflow: hidden;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+      cursor: crosshair;
+      isolation: isolate;
+    }
+
+    .timeline-track::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: repeating-linear-gradient(
+        to bottom,
+        transparent,
+        transparent calc(var(--timeline-hour-height) - 1px),
+        rgba(255, 255, 255, 0.07) calc(var(--timeline-hour-height) - 1px),
+        rgba(255, 255, 255, 0.07) var(--timeline-hour-height)
+      );
+      pointer-events: none;
+      opacity: 0.5;
+    }
+
+    .timeline-track::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to right, rgba(255, 255, 255, 0.06), transparent 45%);
+      pointer-events: none;
+    }
+
+    .timeline-event {
+      position: absolute;
+      margin: 0 3px;
+      border-radius: 16px;
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      min-height: 32px;
+      cursor: grab;
+      background:
+        linear-gradient(135deg, var(--event-color-strong, rgba(255, 255, 255, 0.18)), var(--event-color-soft, rgba(255, 255, 255, 0.05))),
+        rgba(15, 15, 24, 0.78);
+      border-left: 3px solid var(--event-outline, rgba(255, 255, 255, 0.28));
+      box-shadow: 0 18px 28px rgba(0, 0, 0, 0.42);
+      color: var(--text);
+      transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+      z-index: 2;
+    }
+
+    .timeline-event:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 22px 36px rgba(0, 0, 0, 0.5);
+      background:
+        linear-gradient(135deg, var(--event-color-strong, rgba(255, 255, 255, 0.24)), var(--event-color-soft, rgba(255, 255, 255, 0.08))),
+        rgba(18, 18, 28, 0.86);
+      border-color: var(--event-outline, rgba(255, 255, 255, 0.35));
+    }
+
+    .timeline-event:active,
+    .timeline-event.is-dragging {
+      cursor: grabbing;
+      transform: scale(0.99);
+      box-shadow: 0 18px 32px rgba(0, 0, 0, 0.45);
+    }
+
+    .timeline-event.mission-critical {
+      border-color: var(--event-outline, rgba(255, 255, 255, 0.42));
+      box-shadow: 0 20px 34px rgba(0, 0, 0, 0.48);
+    }
+
+    .timeline-event-title {
+      font-weight: 600;
+      font-size: 13px;
+      letter-spacing: 0.01em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .timeline-event-time {
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.72);
+    }
+
+    .timeline-event-category {
+      font-size: 11px;
+      letter-spacing: 0.02em;
+      color: rgba(255, 255, 255, 0.55);
+    }
+
+    .timeline-drop-indicator {
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--accent);
+      box-shadow: 0 0 0 6px rgba(106, 90, 205, 0.16);
+      transform: translateY(-1px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.15s ease;
+      z-index: 3;
+    }
+
+    .timeline-track.show-drop-indicator .timeline-drop-indicator {
+      opacity: 1;
+    }
+
+    .timeline-empty {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      color: rgba(255, 255, 255, 0.45);
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 0 18px;
+      pointer-events: none;
+      z-index: 1;
+    }
+
     .day:is(:hover, .drag-over, .show-flyout) .task-flyout {
       opacity: 1;
       pointer-events: auto;
@@ -785,7 +943,7 @@
     }
 
     .task-flyout .task-list {
-      max-height: clamp(220px, 52vh, 480px);
+      max-height: clamp(160px, 45vh, 340px);
       overflow: auto;
       padding-right: 4px;
     }
@@ -1418,6 +1576,9 @@
       { value: 240, label: '4 hours' },
       { value: 300, label: '5 hours' }
     ];
+
+    const timelineSnapMinutes = 15;
+    const defaultTimelineDuration = 60;
 
     function defaultCategories() {
       return [
@@ -2077,6 +2238,12 @@
       draggedTask = null;
       document.querySelectorAll('.drag-over').forEach((day) => day.classList.remove('drag-over'));
       document.querySelectorAll('.task-card.is-dragging').forEach((card) => card.classList.remove('is-dragging'));
+      document
+        .querySelectorAll('.timeline-event.is-dragging')
+        .forEach((eventEl) => eventEl.classList.remove('is-dragging'));
+      document
+        .querySelectorAll('.timeline-track.show-drop-indicator')
+        .forEach((track) => track.classList.remove('show-drop-indicator'));
     }
 
     function renderCategoryColorOptions() {
@@ -2242,7 +2409,7 @@
       updateDeleteCategoryButtonState(nextValue);
     }
 
-    function openTaskModal(dateKey, task) {
+    function openTaskModal(dateKey, task, defaults = {}) {
       editingDate = dateKey;
       editingTask = task ? { ...task } : null;
       taskModalBackdrop.classList.add('open');
@@ -2250,9 +2417,9 @@
       taskDeleteBtn.style.display = task ? 'inline-flex' : 'none';
 
       taskForm.reset();
-      missionCriticalInput.checked = Boolean(task?.missionCritical);
-      taskTitleInput.value = task?.title || '';
-      const startValue = task?.start || '';
+      missionCriticalInput.checked = task ? Boolean(task.missionCritical) : Boolean(defaults.missionCritical);
+      taskTitleInput.value = task?.title || defaults.title || '';
+      const startValue = task?.start || defaults.start || '';
       if (startPickerController) {
         if (startValue) {
           startPickerController.ensureOption(startValue, startValue);
@@ -2265,21 +2432,27 @@
         taskStartInput.value = startValue;
       }
 
-      const durationValue = typeof task?.duration === 'number' && task.duration > 0 ? task.duration : '';
+      const durationValueRaw = typeof task?.duration === 'number' && task.duration > 0
+        ? task.duration
+        : defaults.duration != null
+          ? normalizeTimelineDuration(defaults.duration)
+          : '';
+      const durationValue = durationValueRaw === '' ? '' : String(durationValueRaw);
       if (durationPickerController) {
         if (durationValue !== '') {
-          durationPickerController.ensureOption(durationValue, formatDuration(durationValue));
+          durationPickerController.ensureOption(durationValue, formatDuration(Number(durationValue)));
         }
-        durationPickerController.setValue(durationValue === '' ? '' : durationValue, {
+        durationPickerController.setValue(durationValue, {
           scrollIntoView: durationValue !== ''
         });
       } else if (taskDurationInput) {
-        taskDurationInput.value = durationValue === '' ? '' : String(durationValue);
+        taskDurationInput.value = durationValue;
       }
       taskNotesInput.value = task?.notes || '';
       newCategoryNameInput.value = '';
       newCategoryColorInput.value = '';
-      populateCategorySelect(task?.category || null);
+      const categorySelection = task?.category || defaults.category || null;
+      populateCategorySelect(categorySelection);
 
         if (task && taskCategorySelect.value === '__new__') {
           newCategoryNameInput.value = task.category || '';
@@ -2828,15 +3001,15 @@
           const tasks = (state.tasks[dateKey] || []).slice().sort(compareTasks);
           const hasTasks = tasks.length > 0;
 
-          let taskList = null;
-          let preview = null;
-
-          if (hasTasks) {
-            taskList = document.createElement('div');
-            taskList.className = 'task-list';
-            preview = document.createElement('div');
+          const preview = hasTasks ? document.createElement('div') : null;
+          if (preview) {
             preview.className = 'task-preview';
           }
+
+          const taskList = document.createElement('div');
+          taskList.className = 'task-list';
+
+          const scheduledEvents = [];
 
           tasks.forEach((task) => {
             const taskCard = document.createElement('div');
@@ -2849,10 +3022,15 @@
             const durationMinutes = Math.max(0, Number(task.duration) || 0);
             const taskColor = baseColor;
 
-            const previewBar = document.createElement('div');
-            previewBar.className = 'task-preview-bar';
-            previewBar.style.background = hexToRgba(taskColor, 0.85);
-            preview.appendChild(previewBar);
+            if (preview) {
+              const previewBar = document.createElement('div');
+              previewBar.className = 'task-preview-bar';
+              previewBar.style.background = hexToRgba(taskColor, 0.85);
+              if (task.missionCritical) {
+                previewBar.classList.add('mission-critical');
+              }
+              preview.appendChild(previewBar);
+            }
 
             const tintStrong = hexToRgba(taskColor, 0.38);
             const tintSoft = hexToRgba(taskColor, 0.14);
@@ -2864,7 +3042,6 @@
 
             if (task.missionCritical) {
               taskCard.classList.add('mission-critical');
-              previewBar.classList.add('mission-critical');
             }
 
             taskCard.addEventListener('dragstart', (event) => {
@@ -2950,23 +3127,214 @@
             }
 
             taskList.appendChild(taskCard);
+
+            const startMinutes = timeStringToMinutes(task.start);
+            if (startMinutes != null && durationMinutes > 0) {
+              scheduledEvents.push({
+                task,
+                startMinutes,
+                durationMinutes,
+                title: task.title,
+                categoryName: category?.name || '',
+                tintStrong,
+                tintSoft,
+                outlineColor,
+                missionCritical: Boolean(task.missionCritical)
+              });
+            }
           });
 
-          let flyout = null;
-
-          if (hasTasks && preview) {
-            cell.appendChild(preview);
+          if (!hasTasks) {
+            const emptyState = document.createElement('div');
+            emptyState.className = 'empty-state';
+            emptyState.textContent = 'No tasks planned yet. Double-click the timeline to add one.';
+            taskList.appendChild(emptyState);
           }
 
-          if (hasTasks && taskList) {
-            flyout = document.createElement('div');
-            flyout.className = 'task-flyout';
-            if (activeProjects.length > 0) {
-              flyout.appendChild(focusBadges);
+          const flyout = document.createElement('div');
+          flyout.className = 'task-flyout';
+          if (activeProjects.length > 0) {
+            flyout.appendChild(focusBadges);
+          }
+
+          const timelineWrapper = document.createElement('div');
+          timelineWrapper.className = 'day-timeline';
+
+          const hoursColumn = document.createElement('div');
+          hoursColumn.className = 'timeline-hours';
+          for (let hour = 0; hour < 24; hour++) {
+            const hourLabel = document.createElement('span');
+            hourLabel.textContent = formatHourLabel(hour);
+            hoursColumn.appendChild(hourLabel);
+          }
+          timelineWrapper.appendChild(hoursColumn);
+
+          const timelineTrack = document.createElement('div');
+          timelineTrack.className = 'timeline-track';
+          timelineTrack.dataset.date = dateKey;
+
+          const timelineEmpty = document.createElement('div');
+          timelineEmpty.className = 'timeline-empty';
+          timelineEmpty.textContent = 'Double-click to schedule a task';
+          timelineTrack.appendChild(timelineEmpty);
+
+          const dropIndicator = document.createElement('div');
+          dropIndicator.className = 'timeline-drop-indicator';
+          timelineTrack.appendChild(dropIndicator);
+
+          const sortedEvents = scheduledEvents
+            .slice()
+            .sort((a, b) => {
+              if (a.startMinutes !== b.startMinutes) return a.startMinutes - b.startMinutes;
+              return b.durationMinutes - a.durationMinutes;
+            });
+
+          if (sortedEvents.length > 0) {
+            timelineEmpty.classList.add('hidden');
+            const laneEndTimes = [];
+            sortedEvents.forEach((eventInfo) => {
+              let laneIndex = laneEndTimes.findIndex((end) => eventInfo.startMinutes >= end);
+              if (laneIndex === -1) {
+                laneIndex = laneEndTimes.length;
+                laneEndTimes.push(eventInfo.startMinutes + eventInfo.durationMinutes);
+              } else {
+                laneEndTimes[laneIndex] = eventInfo.startMinutes + eventInfo.durationMinutes;
+              }
+              eventInfo.lane = laneIndex;
+            });
+
+            const laneCount = Math.max(1, laneEndTimes.length);
+
+            sortedEvents.forEach((eventInfo) => {
+              const eventEl = document.createElement('div');
+              eventEl.className = 'timeline-event';
+              eventEl.draggable = true;
+              eventEl.dataset.taskId = eventInfo.task.id;
+              eventEl.tabIndex = 0;
+              if (eventInfo.missionCritical) {
+                eventEl.classList.add('mission-critical');
+              }
+
+              eventEl.style.top = `${(eventInfo.startMinutes / (24 * 60)) * 100}%`;
+              eventEl.style.height = `${(eventInfo.durationMinutes / (24 * 60)) * 100}%`;
+              eventEl.style.left = `${(eventInfo.lane / laneCount) * 100}%`;
+              eventEl.style.width = `${100 / laneCount}%`;
+              eventEl.style.setProperty('--event-color-strong', eventInfo.tintStrong);
+              eventEl.style.setProperty('--event-color-soft', eventInfo.tintSoft);
+              eventEl.style.setProperty('--event-outline', eventInfo.outlineColor);
+
+              const ariaParts = [eventInfo.title, getTaskTimeRange(eventInfo.task), formatDuration(eventInfo.durationMinutes)];
+              if (eventInfo.categoryName) {
+                ariaParts.push(eventInfo.categoryName);
+              }
+              eventEl.setAttribute('aria-label', ariaParts.filter(Boolean).join(', '));
+
+              eventEl.addEventListener('dragstart', (event) => {
+                draggedTask = { id: eventInfo.task.id, fromDate: dateKey };
+                event.dataTransfer.effectAllowed = 'move';
+                event.dataTransfer.setData('text/plain', String(eventInfo.task.id));
+                eventEl.classList.add('is-dragging');
+              });
+
+              eventEl.addEventListener('dragend', () => {
+                clearDragState();
+              });
+
+              eventEl.addEventListener('dblclick', (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                openTaskModal(dateKey, eventInfo.task);
+              });
+
+              eventEl.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault();
+                  openTaskModal(dateKey, eventInfo.task);
+                }
+              });
+
+              const titleEl = document.createElement('div');
+              titleEl.className = 'timeline-event-title';
+              titleEl.textContent = eventInfo.title;
+              eventEl.appendChild(titleEl);
+
+              const timeEl = document.createElement('div');
+              timeEl.className = 'timeline-event-time';
+              timeEl.textContent = getTaskTimeRange(eventInfo.task);
+              eventEl.appendChild(timeEl);
+
+              const detailEl = document.createElement('div');
+              detailEl.className = 'timeline-event-category';
+              const detailParts = [];
+              if (eventInfo.categoryName) detailParts.push(eventInfo.categoryName);
+              detailParts.push(formatDuration(eventInfo.durationMinutes));
+              detailEl.textContent = detailParts.join(' • ');
+              eventEl.appendChild(detailEl);
+
+              timelineTrack.appendChild(eventEl);
+            });
+          }
+
+          timelineTrack.addEventListener('dblclick', (event) => {
+            if (event.target.closest('.timeline-event')) return;
+            event.preventDefault();
+            event.stopPropagation();
+            const minutes = getTimelineMinutesFromPointer(event, timelineTrack);
+            const normalized = normalizeTimelineStart(minutes, defaultTimelineDuration);
+            openTaskModal(dateKey, null, {
+              start: minutesToTimeString(normalized),
+              duration: defaultTimelineDuration
+            });
+          });
+
+          timelineTrack.addEventListener('dragover', (event) => {
+            if (!draggedTask) return;
+            event.preventDefault();
+            event.stopPropagation();
+            const activeTask = getTaskById(draggedTask.fromDate, draggedTask.id);
+            const durationForDrop = activeTask ? normalizeTimelineDuration(activeTask.duration) : defaultTimelineDuration;
+            const minutes = normalizeTimelineStart(getTimelineMinutesFromPointer(event, timelineTrack), durationForDrop);
+            timelineTrack.classList.add('show-drop-indicator');
+            dropIndicator.style.top = `${(minutes / (24 * 60)) * 100}%`;
+            if (event.dataTransfer) {
+              event.dataTransfer.dropEffect = 'move';
             }
-            flyout.appendChild(taskList);
-            flyout.addEventListener('mouseenter', hideMiniTooltip);
-            cell.appendChild(flyout);
+          });
+
+          timelineTrack.addEventListener('dragleave', (event) => {
+            if (!timelineTrack.contains(event.relatedTarget)) {
+              timelineTrack.classList.remove('show-drop-indicator');
+            }
+          });
+
+          timelineTrack.addEventListener('drop', (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            timelineTrack.classList.remove('show-drop-indicator');
+            if (!draggedTask) {
+              clearDragState();
+              return;
+            }
+            const activeTask = getTaskById(draggedTask.fromDate, draggedTask.id);
+            const durationForDrop = activeTask ? normalizeTimelineDuration(activeTask.duration) : defaultTimelineDuration;
+            const minutes = normalizeTimelineStart(getTimelineMinutesFromPointer(event, timelineTrack), durationForDrop);
+            const updated = placeTaskOnTimeline(draggedTask, dateKey, minutes);
+            if (updated) {
+              saveState();
+              renderCalendar();
+              return;
+            }
+            clearDragState();
+          });
+
+          timelineWrapper.appendChild(timelineTrack);
+          flyout.appendChild(timelineWrapper);
+          flyout.appendChild(taskList);
+          flyout.addEventListener('mouseenter', hideMiniTooltip);
+          cell.appendChild(flyout);
+
+          if (preview) {
+            cell.appendChild(preview);
           }
 
           if (realTodayKey === dateKey) {
@@ -2976,9 +3344,7 @@
           }
 
           monthGrid.appendChild(cell);
-          if (flyout) {
-            setupFlyoutHover(cell, flyout);
-          }
+          setupFlyoutHover(cell, flyout);
         }
 
         calendarGridEl.appendChild(monthBlock);
@@ -3008,6 +3374,63 @@
       return `${String(endHours).padStart(2, '0')}:${String(endMinutes).padStart(2, '0')}`;
     }
 
+    function timeStringToMinutes(value) {
+      if (!value || typeof value !== 'string') return null;
+      const [hoursPart, minutesPart] = value.split(':');
+      const hours = Number(hoursPart);
+      const minutes = Number(minutesPart);
+      if (!Number.isFinite(hours) || !Number.isFinite(minutes)) return null;
+      const total = hours * 60 + minutes;
+      return Math.max(0, Math.min(total, 24 * 60 - 1));
+    }
+
+    function minutesToTimeString(totalMinutes) {
+      const safe = Math.max(0, Math.min(Math.round(totalMinutes), 24 * 60 - 1));
+      const hours = Math.floor(safe / 60);
+      const minutes = safe % 60;
+      return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+    }
+
+    function snapToTimeline(minutes) {
+      return Math.round(minutes / timelineSnapMinutes) * timelineSnapMinutes;
+    }
+
+    function normalizeTimelineDuration(duration) {
+      const numeric = Number(duration);
+      if (!Number.isFinite(numeric) || numeric <= 0) {
+        return defaultTimelineDuration;
+      }
+      return Math.max(timelineSnapMinutes, Math.round(numeric / timelineSnapMinutes) * timelineSnapMinutes);
+    }
+
+    function normalizeTimelineStart(minutes, duration) {
+      const snapped = snapToTimeline(minutes);
+      const safeDuration = normalizeTimelineDuration(duration);
+      const maxStart = Math.max(0, 24 * 60 - safeDuration);
+      return Math.max(0, Math.min(snapped, maxStart));
+    }
+
+    function formatHourLabel(hour) {
+      const normalized = ((Number(hour) || 0) % 24 + 24) % 24;
+      const suffix = normalized < 12 ? 'a' : 'p';
+      const display = normalized % 12 === 0 ? 12 : normalized % 12;
+      return `${display}${suffix}`;
+    }
+
+    function getTimelineMinutesFromPointer(event, track) {
+      if (!track) return 0;
+      const rect = track.getBoundingClientRect();
+      const offset = Math.max(0, Math.min(event.clientY - rect.top, rect.height));
+      const ratio = rect.height > 0 ? offset / Math.max(rect.height, 1) : 0;
+      return ratio * 24 * 60;
+    }
+
+    function getTaskById(dateKey, taskId) {
+      const tasks = state.tasks[dateKey];
+      if (!Array.isArray(tasks)) return null;
+      return tasks.find((task) => task.id === taskId) || null;
+    }
+
     function moveTaskToDate(taskInfo, newDateKey) {
       const fromTasks = state.tasks[taskInfo.fromDate] || [];
       const taskIndex = fromTasks.findIndex((t) => t.id === taskInfo.id);
@@ -3024,6 +3447,31 @@
       state.tasks[newDateKey].sort(compareTasks);
       saveState();
       renderCalendar();
+    }
+
+    function placeTaskOnTimeline(taskInfo, targetDateKey, startMinutes) {
+      const fromTasks = ensureTasks(taskInfo.fromDate);
+      const taskIndex = fromTasks.findIndex((task) => task.id === taskInfo.id);
+      if (taskIndex === -1) return false;
+
+      const task = fromTasks[taskIndex];
+      const normalizedDuration = normalizeTimelineDuration(task.duration);
+      const normalizedStart = normalizeTimelineStart(startMinutes, normalizedDuration);
+
+      let targetTasks = ensureTasks(targetDateKey);
+
+      if (taskInfo.fromDate !== targetDateKey) {
+        fromTasks.splice(taskIndex, 1);
+        targetTasks = ensureTasks(targetDateKey);
+        targetTasks.push(task);
+        removeEmptyTaskLists(taskInfo.fromDate);
+      }
+
+      task.start = minutesToTimeString(normalizedStart);
+      task.duration = normalizedDuration;
+
+      targetTasks.sort(compareTasks);
+      return true;
     }
 
     document.getElementById('reset-calendar').addEventListener('click', () => {
