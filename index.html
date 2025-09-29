@@ -354,32 +354,6 @@
       box-shadow: 0 0 0 2px rgba(106, 90, 205, 0.35);
     }
 
-    @keyframes mini-day-pulse {
-      0% {
-        opacity: 0.65;
-        transform: scale(0.85);
-      }
-      50% {
-        opacity: 0.25;
-        transform: scale(1.1);
-      }
-      100% {
-        opacity: 0;
-        transform: scale(1.2);
-      }
-    }
-
-    .mini-day.highlight-pulse::after {
-      content: '';
-      position: absolute;
-      inset: -6px;
-      border-radius: 14px;
-      border: 2px solid rgba(106, 90, 205, 0.75);
-      opacity: 0;
-      animation: mini-day-pulse 1.8s ease-out forwards;
-      pointer-events: none;
-    }
-
     @media (max-width: 1180px) {
       .calendar-layout {
         flex-direction: column;
@@ -776,11 +750,6 @@
       box-shadow: 0 8px 16px rgba(0, 0, 0, 0.28);
     }
 
-    .task-preview-bar.is-complete {
-      opacity: 0.4;
-      filter: saturate(0.6);
-    }
-
     .task-preview-empty {
       font-size: 11px;
       color: rgba(255, 255, 255, 0.35);
@@ -810,36 +779,11 @@
       z-index: 40;
     }
 
-    .task-flyout-header {
-      font-size: 13px;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: rgba(255, 255, 255, 0.6);
-    }
-
     .day-timeline {
-      position: relative;
-    }
-
-    .timeline-scroll {
       display: grid;
       grid-template-columns: 52px 1fr;
       align-items: stretch;
       gap: 16px;
-      max-height: calc(var(--timeline-hour-height) * 12);
-      overflow-y: auto;
-      padding-right: 4px;
-      scrollbar-width: thin;
-      scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
-    }
-
-    .timeline-scroll::-webkit-scrollbar {
-      width: 6px;
-    }
-
-    .timeline-scroll::-webkit-scrollbar-thumb {
-      background: rgba(255, 255, 255, 0.2);
-      border-radius: 999px;
     }
 
     .timeline-hours {
@@ -864,7 +808,7 @@
       position: relative;
       height: calc(var(--timeline-hour-height) * 24);
       border-radius: var(--radius-md);
-      background: var(--timeline-background, rgba(255, 255, 255, 0.04));
+      background: rgba(255, 255, 255, 0.04);
       border: 1px solid rgba(255, 255, 255, 0.08);
       overflow: hidden;
       box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
@@ -899,12 +843,11 @@
       position: absolute;
       margin: 0 3px;
       border-radius: 16px;
-      padding: 6px 10px;
-      padding-right: 40px;
+      padding: 10px 12px;
       display: flex;
       flex-direction: column;
-      justify-content: flex-start;
-      gap: 4px;
+      gap: 6px;
+      min-height: 32px;
       cursor: grab;
       background:
         linear-gradient(135deg, var(--event-color-strong, rgba(255, 255, 255, 0.18)), var(--event-color-soft, rgba(255, 255, 255, 0.05))),
@@ -937,48 +880,8 @@
       box-shadow: 0 20px 34px rgba(0, 0, 0, 0.48);
     }
 
-    .timeline-event.task-complete {
-      filter: saturate(0.55);
-      opacity: 0.7;
-    }
-
-    .timeline-event-done {
-      position: absolute;
-      top: 6px;
-      right: 6px;
-      appearance: none;
-      border: 1px solid rgba(255, 255, 255, 0.25);
-      background: rgba(0, 0, 0, 0.25);
-      color: var(--text);
-      border-radius: 999px;
-      padding: 2px 8px;
-      font-size: 10px;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      cursor: pointer;
-      opacity: 0;
-      transition: opacity 0.2s ease, background 0.2s ease, border-color 0.2s ease;
-    }
-
-    .timeline-event:hover .timeline-event-done,
-    .timeline-event:focus-within .timeline-event-done,
-    .timeline-event.task-complete .timeline-event-done {
-      opacity: 1;
-    }
-
-    .timeline-event-done[aria-pressed="true"] {
-      background: rgba(255, 255, 255, 0.2);
-      border-color: rgba(255, 255, 255, 0.38);
-      color: rgba(255, 255, 255, 0.82);
-    }
-
-    .timeline-event-done:focus-visible {
-      outline: none;
-      border-color: rgba(255, 255, 255, 0.45);
-    }
-
     .timeline-event-title {
-      font-weight: 700;
+      font-weight: 600;
       font-size: 13px;
       letter-spacing: 0.01em;
       white-space: nowrap;
@@ -986,33 +889,17 @@
       text-overflow: ellipsis;
     }
 
-    .timeline-event-notes {
+    .timeline-event-time {
       font-size: 11px;
-      line-height: 1.3;
-      color: rgba(255, 255, 255, 0.78);
-      overflow: hidden;
-      text-overflow: ellipsis;
-      display: -webkit-box;
-      -webkit-line-clamp: 3;
-      -webkit-box-orient: vertical;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.72);
     }
 
-    .timeline-focus-label {
-      position: absolute;
-      inset: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+    .timeline-event-category {
       font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 0.4em;
-      font-weight: 600;
-      color: rgba(255, 255, 255, 0.16);
-      pointer-events: none;
-      mix-blend-mode: screen;
-      text-align: center;
-      padding: 0 12px;
-      z-index: 0;
+      letter-spacing: 0.02em;
+      color: rgba(255, 255, 255, 0.55);
     }
 
     .timeline-drop-indicator {
@@ -1109,6 +996,18 @@
       pointer-events: none;
     }
 
+    .task-card::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      width: 4px;
+      background: var(--task-outline, rgba(255, 255, 255, 0.24));
+      opacity: 0.85;
+      pointer-events: none;
+    }
+
     .task-card:hover {
       transform: translateY(-2px);
       box-shadow: 0 28px 50px rgba(0, 0, 0, 0.5);
@@ -1135,29 +1034,22 @@
       box-shadow: 0 22px 44px rgba(0, 0, 0, 0.35);
     }
 
-    .task-card.task-complete {
-      filter: saturate(0.55);
-      opacity: 0.7;
-    }
-
     .task-title {
       font-weight: 600;
       font-size: 15px;
       display: flex;
       align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
+      gap: 12px;
+      flex-wrap: nowrap;
       position: relative;
       z-index: 1;
     }
 
-    .task-name {
+    .task-title .task-name {
       flex: 1 1 auto;
-      min-width: 120px;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
-      font-weight: 600;
       letter-spacing: 0.01em;
     }
 
@@ -1166,42 +1058,16 @@
       color: rgba(255, 255, 255, 0.68);
       letter-spacing: 0.12em;
       text-transform: uppercase;
+      margin-left: auto;
     }
 
     .task-dot {
-      width: 10px;
-      height: 10px;
+      width: 12px;
+      height: 12px;
       border-radius: 50%;
       flex-shrink: 0;
       background: var(--task-dot, rgba(255, 255, 255, 0.65));
       box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.12);
-    }
-
-    .task-done-toggle {
-      margin-left: auto;
-      appearance: none;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      background: rgba(255, 255, 255, 0.06);
-      color: var(--text);
-      border-radius: 999px;
-      padding: 4px 10px;
-      font-size: 11px;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      cursor: pointer;
-      transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
-    }
-
-    .task-done-toggle:hover,
-    .task-done-toggle:focus-visible {
-      background: rgba(255, 255, 255, 0.1);
-      border-color: rgba(255, 255, 255, 0.35);
-      outline: none;
-    }
-
-    .task-done-toggle[aria-pressed="true"] {
-      background: rgba(255, 255, 255, 0.18);
-      color: rgba(255, 255, 255, 0.75);
     }
 
     .task-meta {
@@ -1713,7 +1579,6 @@
 
     const timelineSnapMinutes = 15;
     const defaultTimelineDuration = 60;
-    const defaultTimelineStartHour = 7;
 
     function defaultCategories() {
       return [
@@ -1731,8 +1596,7 @@
         categories,
         nextTaskId: 1,
         nextProjectId: 1,
-        nextCategoryId: categories.length + 1,
-        lastSelectedCategory: 'General'
+        nextCategoryId: categories.length + 1
       };
     };
 
@@ -1758,9 +1622,6 @@
           parsed.nextCategoryId = maxId + 1;
         }
         migrateTaskData(parsed);
-        if (!parsed.lastSelectedCategory || typeof parsed.lastSelectedCategory !== 'string') {
-          parsed.lastSelectedCategory = 'General';
-        }
         if (migratedFromLegacy) {
           try {
             localStorage.removeItem(legacyStorageKey);
@@ -1862,7 +1723,6 @@
           delete task.color;
 
           task.missionCritical = Boolean(task.missionCritical);
-          task.completed = Boolean(task.completed);
         });
         state.tasks[dateKey] = tasks.filter(Boolean).sort(compareTasks);
         if (state.tasks[dateKey].length === 0) {
@@ -2140,8 +2000,6 @@
     }
 
     function compareTasks(a, b) {
-      if (a.completed && !b.completed) return 1;
-      if (!a.completed && b.completed) return -1;
       const timeA = a.start || '';
       const timeB = b.start || '';
       const hasTimeA = Boolean(timeA);
@@ -2593,22 +2451,16 @@
       taskNotesInput.value = task?.notes || '';
       newCategoryNameInput.value = '';
       newCategoryColorInput.value = '';
-      const fallbackCategory = state.lastSelectedCategory || ensureGeneralCategoryExists().name;
-      const categorySelection = task?.category || defaults.category || fallbackCategory;
+      const categorySelection = task?.category || defaults.category || null;
       populateCategorySelect(categorySelection);
 
-      if (task && taskCategorySelect.value === '__new__') {
-        newCategoryNameInput.value = task.category || '';
-        const fallbackColor = getCategoryByName(task.category)?.color || pickCategoryColor(state);
-        newCategoryColorInput.value = fallbackColor;
-        toggleNewCategoryFields(true);
-        selectCategoryColor(fallbackColor);
-      }
-
-      requestAnimationFrame(() => {
-        taskTitleInput?.focus({ preventScroll: true });
-        taskTitleInput?.select();
-      });
+        if (task && taskCategorySelect.value === '__new__') {
+          newCategoryNameInput.value = task.category || '';
+          const fallbackColor = getCategoryByName(task.category)?.color || pickCategoryColor(state);
+          newCategoryColorInput.value = fallbackColor;
+          toggleNewCategoryFields(true);
+          selectCategoryColor(fallbackColor);
+        }
     }
 
     function closeTaskModal() {
@@ -2939,20 +2791,14 @@
       if (!calendarGridEl || !dateKey) return;
       const trigger = () => {
         const dayEl = calendarGridEl.querySelector(`.day[data-date="${dateKey}"]`);
-        const miniEl = yearViewEl?.querySelector(`.mini-day[data-date="${dateKey}"]`);
-        if (dayEl) {
-          dayEl.classList.add('highlight-pulse');
-        }
-        if (miniEl) {
-          miniEl.classList.add('highlight-pulse');
-        }
+        if (!dayEl) return;
+        dayEl.classList.add('highlight-pulse');
         const existing = dayHighlightTimers.get(dateKey);
         if (existing) {
           clearTimeout(existing);
         }
         const timeout = setTimeout(() => {
-          dayEl?.classList.remove('highlight-pulse');
-          miniEl?.classList.remove('highlight-pulse');
+          dayEl.classList.remove('highlight-pulse');
           dayHighlightTimers.delete(dateKey);
         }, 1950);
         dayHighlightTimers.set(dateKey, timeout);
@@ -3153,31 +2999,35 @@
           cell.addEventListener('mouseleave', hideMiniTooltip);
 
           const tasks = (state.tasks[dateKey] || []).slice().sort(compareTasks);
-          const preview = tasks.length > 0 ? document.createElement('div') : null;
+          const hasTasks = tasks.length > 0;
+
+          const preview = hasTasks ? document.createElement('div') : null;
           if (preview) {
             preview.className = 'task-preview';
           }
 
+          const taskList = document.createElement('div');
+          taskList.className = 'task-list';
+
           const scheduledEvents = [];
-          const unscheduledTasks = [];
 
           tasks.forEach((task) => {
+            const taskCard = document.createElement('div');
+            taskCard.className = 'task-card';
+            taskCard.draggable = true;
+            taskCard.dataset.taskId = task.id;
+
             const category = getCategoryByName(task.category) || ensureGeneralCategoryExists();
             const baseColor = category?.color || '#6A5ACD';
             const durationMinutes = Math.max(0, Number(task.duration) || 0);
             const taskColor = baseColor;
-            const startMinutes = timeStringToMinutes(task.start);
-            const hasSchedule = startMinutes != null && durationMinutes > 0;
 
-            if (preview && hasSchedule) {
+            if (preview) {
               const previewBar = document.createElement('div');
               previewBar.className = 'task-preview-bar';
               previewBar.style.background = hexToRgba(taskColor, 0.85);
               if (task.missionCritical) {
                 previewBar.classList.add('mission-critical');
-              }
-              if (task.completed) {
-                previewBar.classList.add('is-complete');
               }
               preview.appendChild(previewBar);
             }
@@ -3185,8 +3035,101 @@
             const tintStrong = hexToRgba(taskColor, 0.38);
             const tintSoft = hexToRgba(taskColor, 0.14);
             const outlineColor = hexToRgba(taskColor, 0.55);
+            taskCard.style.setProperty('--task-tint-strong', tintStrong);
+            taskCard.style.setProperty('--task-tint-soft', tintSoft);
+            taskCard.style.setProperty('--task-outline', outlineColor);
+            taskCard.style.setProperty('--task-dot', taskColor);
 
-            if (hasSchedule) {
+            if (task.missionCritical) {
+              taskCard.classList.add('mission-critical');
+            }
+
+            taskCard.addEventListener('dragstart', (event) => {
+              draggedTask = { id: task.id, fromDate: dateKey };
+              event.dataTransfer.effectAllowed = 'move';
+              event.dataTransfer.setData('text/plain', String(task.id));
+              taskCard.classList.add('is-dragging');
+            });
+
+            taskCard.addEventListener('dragend', () => {
+              clearDragState();
+            });
+
+            taskCard.addEventListener('dblclick', () => {
+              openTaskModal(dateKey, task);
+            });
+
+            const title = document.createElement('div');
+            title.className = 'task-title';
+
+            const colorDot = document.createElement('span');
+            colorDot.className = 'task-dot';
+            colorDot.style.background = taskColor;
+            title.appendChild(colorDot);
+
+            const name = document.createElement('span');
+            name.className = 'task-name';
+            name.textContent = task.title;
+            title.appendChild(name);
+
+            const timeRange = getTaskTimeRange(task);
+            if (timeRange) {
+              const timeEl = document.createElement('span');
+              timeEl.className = 'task-time';
+              timeEl.textContent = timeRange;
+              title.appendChild(timeEl);
+            }
+
+            taskCard.appendChild(title);
+
+            const meta = document.createElement('div');
+            meta.className = 'task-meta';
+            const detailRow = document.createElement('div');
+            detailRow.className = 'task-detail-row';
+
+            if (category) {
+              const categoryDetail = document.createElement('span');
+              categoryDetail.className = 'task-detail';
+              categoryDetail.textContent = category.name;
+              detailRow.appendChild(categoryDetail);
+            }
+
+            if (durationMinutes > 0) {
+              const durationDetail = document.createElement('span');
+              durationDetail.className = 'task-detail';
+              durationDetail.textContent = `Duration ${formatDuration(durationMinutes)}`;
+              detailRow.appendChild(durationDetail);
+            }
+
+            if (task.missionCritical) {
+              const missionDetail = document.createElement('span');
+              missionDetail.className = 'task-detail mission-critical';
+              missionDetail.textContent = 'Mission critical';
+              detailRow.appendChild(missionDetail);
+            }
+
+            if (detailRow.children.length) {
+              meta.appendChild(detailRow);
+            }
+
+            if (task.notes) {
+              const firstLine = task.notes.split(/\r?\n/)[0].trim();
+              if (firstLine) {
+                const notesLine = document.createElement('div');
+                notesLine.className = 'task-note-line';
+                notesLine.textContent = firstLine;
+                meta.appendChild(notesLine);
+              }
+            }
+
+            if (meta.children.length) {
+              taskCard.appendChild(meta);
+            }
+
+            taskList.appendChild(taskCard);
+
+            const startMinutes = timeStringToMinutes(task.start);
+            if (startMinutes != null && durationMinutes > 0) {
               scheduledEvents.push({
                 task,
                 startMinutes,
@@ -3198,33 +3141,24 @@
                 outlineColor,
                 missionCritical: Boolean(task.missionCritical)
               });
-            } else {
-              unscheduledTasks.push({
-                task,
-                category,
-                tintStrong,
-                tintSoft,
-                outlineColor,
-                taskColor,
-                durationMinutes
-              });
             }
           });
 
+          if (!hasTasks) {
+            const emptyState = document.createElement('div');
+            emptyState.className = 'empty-state';
+            emptyState.textContent = 'No tasks planned yet. Double-click the timeline to add one.';
+            taskList.appendChild(emptyState);
+          }
+
           const flyout = document.createElement('div');
           flyout.className = 'task-flyout';
-
-          const flyoutHeader = document.createElement('div');
-          flyoutHeader.className = 'task-flyout-header';
-          flyoutHeader.textContent = formatFullDate(date);
-          flyout.appendChild(flyoutHeader);
+          if (activeProjects.length > 0) {
+            flyout.appendChild(focusBadges);
+          }
 
           const timelineWrapper = document.createElement('div');
           timelineWrapper.className = 'day-timeline';
-
-          const timelineScroll = document.createElement('div');
-          timelineScroll.className = 'timeline-scroll';
-          timelineWrapper.appendChild(timelineScroll);
 
           const hoursColumn = document.createElement('div');
           hoursColumn.className = 'timeline-hours';
@@ -3233,22 +3167,11 @@
             hourLabel.textContent = formatHourLabel(hour);
             hoursColumn.appendChild(hourLabel);
           }
-          timelineScroll.appendChild(hoursColumn);
+          timelineWrapper.appendChild(hoursColumn);
 
           const timelineTrack = document.createElement('div');
           timelineTrack.className = 'timeline-track';
           timelineTrack.dataset.date = dateKey;
-
-          if (activeProjects.length > 0) {
-            const primaryFocus = activeProjects[0];
-            const focusStrong = hexToRgba(primaryFocus.color, 0.22);
-            timelineTrack.classList.add('has-focus');
-            timelineTrack.style.setProperty('--timeline-background', `linear-gradient(160deg, ${focusStrong}, rgba(18, 18, 28, 0.88))`);
-            const focusLabel = document.createElement('div');
-            focusLabel.className = 'timeline-focus-label';
-            focusLabel.textContent = activeProjects.map((project) => project.name).join(' • ');
-            timelineTrack.appendChild(focusLabel);
-          }
 
           const timelineEmpty = document.createElement('div');
           timelineEmpty.className = 'timeline-empty';
@@ -3291,9 +3214,6 @@
               if (eventInfo.missionCritical) {
                 eventEl.classList.add('mission-critical');
               }
-              if (eventInfo.task.completed) {
-                eventEl.classList.add('task-complete');
-              }
 
               eventEl.style.top = `${(eventInfo.startMinutes / (24 * 60)) * 100}%`;
               eventEl.style.height = `${(eventInfo.durationMinutes / (24 * 60)) * 100}%`;
@@ -3306,9 +3226,6 @@
               const ariaParts = [eventInfo.title, getTaskTimeRange(eventInfo.task), formatDuration(eventInfo.durationMinutes)];
               if (eventInfo.categoryName) {
                 ariaParts.push(eventInfo.categoryName);
-              }
-              if (eventInfo.task.completed) {
-                ariaParts.push('Completed');
               }
               eventEl.setAttribute('aria-label', ariaParts.filter(Boolean).join(', '));
 
@@ -3341,174 +3258,80 @@
               titleEl.textContent = eventInfo.title;
               eventEl.appendChild(titleEl);
 
-              const doneButton = document.createElement('button');
-              doneButton.type = 'button';
-              doneButton.className = 'timeline-event-done';
-              doneButton.textContent = 'Done';
-              doneButton.setAttribute('aria-label', 'Toggle done');
-              doneButton.setAttribute('aria-pressed', eventInfo.task.completed ? 'true' : 'false');
-              doneButton.addEventListener('click', (event) => {
-                event.preventDefault();
-                event.stopPropagation();
-                toggleTaskCompletion(dateKey, eventInfo.task.id, !eventInfo.task.completed);
-              });
-              eventEl.appendChild(doneButton);
+              const timeEl = document.createElement('div');
+              timeEl.className = 'timeline-event-time';
+              timeEl.textContent = getTaskTimeRange(eventInfo.task);
+              eventEl.appendChild(timeEl);
 
-              const noteText = (eventInfo.task.notes || '').split(/\r?\n/).map((line) => line.trim()).find(Boolean);
-              if (noteText) {
-                const notesEl = document.createElement('div');
-                notesEl.className = 'timeline-event-notes';
-                notesEl.textContent = noteText;
-                eventEl.appendChild(notesEl);
-              }
+              const detailEl = document.createElement('div');
+              detailEl.className = 'timeline-event-category';
+              const detailParts = [];
+              if (eventInfo.categoryName) detailParts.push(eventInfo.categoryName);
+              detailParts.push(formatDuration(eventInfo.durationMinutes));
+              detailEl.textContent = detailParts.join(' • ');
+              eventEl.appendChild(detailEl);
 
               timelineTrack.appendChild(eventEl);
             });
           }
 
-          timelineScroll.appendChild(timelineTrack);
-          flyout.appendChild(timelineWrapper);
-
-          if (unscheduledTasks.length > 0) {
-            const taskList = document.createElement('div');
-            taskList.className = 'task-list';
-
-            unscheduledTasks.forEach(({ task, category, tintStrong, tintSoft, outlineColor, taskColor, durationMinutes }) => {
-              const taskCard = document.createElement('div');
-              taskCard.className = 'task-card';
-              taskCard.draggable = true;
-              taskCard.dataset.taskId = task.id;
-
-              if (task.missionCritical) {
-                taskCard.classList.add('mission-critical');
-              }
-              if (task.completed) {
-                taskCard.classList.add('task-complete');
-              }
-
-              taskCard.style.setProperty('--task-tint-strong', tintStrong);
-              taskCard.style.setProperty('--task-tint-soft', tintSoft);
-              taskCard.style.setProperty('--task-outline', outlineColor);
-              taskCard.style.setProperty('--task-dot', taskColor);
-
-              taskCard.addEventListener('dragstart', (event) => {
-                draggedTask = { id: task.id, fromDate: dateKey };
-                event.dataTransfer.effectAllowed = 'move';
-                event.dataTransfer.setData('text/plain', String(task.id));
-                taskCard.classList.add('is-dragging');
-              });
-
-              taskCard.addEventListener('dragend', () => {
-                clearDragState();
-              });
-
-              taskCard.addEventListener('dblclick', () => {
-                openTaskModal(dateKey, task);
-              });
-
-              const title = document.createElement('div');
-              title.className = 'task-title';
-
-              const colorDot = document.createElement('span');
-              colorDot.className = 'task-dot';
-              colorDot.style.background = taskColor;
-              title.appendChild(colorDot);
-
-              const name = document.createElement('span');
-              name.className = 'task-name';
-              name.textContent = task.title;
-              title.appendChild(name);
-
-              if (task.start) {
-                const timeEl = document.createElement('span');
-                timeEl.className = 'task-time';
-                timeEl.textContent = task.start;
-                title.appendChild(timeEl);
-              }
-
-              const doneButton = document.createElement('button');
-              doneButton.type = 'button';
-              doneButton.className = 'task-done-toggle';
-              doneButton.textContent = 'Done';
-              doneButton.setAttribute('aria-label', 'Toggle done');
-              doneButton.setAttribute('aria-pressed', task.completed ? 'true' : 'false');
-              doneButton.addEventListener('click', (event) => {
-                event.preventDefault();
-                event.stopPropagation();
-                toggleTaskCompletion(dateKey, task.id, !task.completed);
-              });
-              title.appendChild(doneButton);
-
-              taskCard.appendChild(title);
-
-              const meta = document.createElement('div');
-              meta.className = 'task-meta';
-              const detailRow = document.createElement('div');
-              detailRow.className = 'task-detail-row';
-
-              if (category) {
-                const categoryDetail = document.createElement('span');
-                categoryDetail.className = 'task-detail';
-                categoryDetail.textContent = category.name;
-                detailRow.appendChild(categoryDetail);
-              }
-
-              if (durationMinutes > 0) {
-                const durationDetail = document.createElement('span');
-                durationDetail.className = 'task-detail';
-                durationDetail.textContent = `Duration ${formatDuration(durationMinutes)}`;
-                detailRow.appendChild(durationDetail);
-              }
-
-              if (task.missionCritical) {
-                const missionDetail = document.createElement('span');
-                missionDetail.className = 'task-detail mission-critical';
-                missionDetail.textContent = 'Mission critical';
-                detailRow.appendChild(missionDetail);
-              }
-
-              if (detailRow.children.length) {
-                meta.appendChild(detailRow);
-              }
-
-              if (task.notes) {
-                const firstLine = task.notes.split(/\r?\n/).map((line) => line.trim()).find(Boolean);
-                if (firstLine) {
-                  const notesLine = document.createElement('div');
-                  notesLine.className = 'task-note-line';
-                  notesLine.textContent = firstLine;
-                  meta.appendChild(notesLine);
-                }
-              }
-
-              if (meta.children.length) {
-                taskCard.appendChild(meta);
-              }
-
-              taskList.appendChild(taskCard);
+          timelineTrack.addEventListener('dblclick', (event) => {
+            if (event.target.closest('.timeline-event')) return;
+            event.preventDefault();
+            event.stopPropagation();
+            const minutes = getTimelineMinutesFromPointer(event, timelineTrack);
+            const normalized = normalizeTimelineStart(minutes, defaultTimelineDuration);
+            openTaskModal(dateKey, null, {
+              start: minutesToTimeString(normalized),
+              duration: defaultTimelineDuration
             });
+          });
 
-            flyout.appendChild(taskList);
-          } else if (tasks.length === 0) {
-            const emptyState = document.createElement('div');
-            emptyState.className = 'empty-state';
-            emptyState.textContent = 'No tasks planned yet. Double-click the timeline to add one.';
-            flyout.appendChild(emptyState);
-          }
-          flyout.addEventListener('mouseenter', hideMiniTooltip);
-          cell.appendChild(flyout);
-
-          requestAnimationFrame(() => {
-            const trackHeight = timelineTrack.scrollHeight;
-            const viewportHeight = timelineScroll.clientHeight;
-            if (viewportHeight > 0) {
-              const target = ((defaultTimelineStartHour * 60) / (24 * 60)) * trackHeight;
-              const maxScroll = Math.max(0, trackHeight - viewportHeight);
-              timelineScroll.scrollTop = Math.min(Math.max(target, 0), maxScroll);
-            } else {
-              timelineScroll.scrollTop = 0;
+          timelineTrack.addEventListener('dragover', (event) => {
+            if (!draggedTask) return;
+            event.preventDefault();
+            event.stopPropagation();
+            const activeTask = getTaskById(draggedTask.fromDate, draggedTask.id);
+            const durationForDrop = activeTask ? normalizeTimelineDuration(activeTask.duration) : defaultTimelineDuration;
+            const minutes = normalizeTimelineStart(getTimelineMinutesFromPointer(event, timelineTrack), durationForDrop);
+            timelineTrack.classList.add('show-drop-indicator');
+            dropIndicator.style.top = `${(minutes / (24 * 60)) * 100}%`;
+            if (event.dataTransfer) {
+              event.dataTransfer.dropEffect = 'move';
             }
           });
+
+          timelineTrack.addEventListener('dragleave', (event) => {
+            if (!timelineTrack.contains(event.relatedTarget)) {
+              timelineTrack.classList.remove('show-drop-indicator');
+            }
+          });
+
+          timelineTrack.addEventListener('drop', (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            timelineTrack.classList.remove('show-drop-indicator');
+            if (!draggedTask) {
+              clearDragState();
+              return;
+            }
+            const activeTask = getTaskById(draggedTask.fromDate, draggedTask.id);
+            const durationForDrop = activeTask ? normalizeTimelineDuration(activeTask.duration) : defaultTimelineDuration;
+            const minutes = normalizeTimelineStart(getTimelineMinutesFromPointer(event, timelineTrack), durationForDrop);
+            const updated = placeTaskOnTimeline(draggedTask, dateKey, minutes);
+            if (updated) {
+              saveState();
+              renderCalendar();
+              return;
+            }
+            clearDragState();
+          });
+
+          timelineWrapper.appendChild(timelineTrack);
+          flyout.appendChild(timelineWrapper);
+          flyout.appendChild(taskList);
+          flyout.addEventListener('mouseenter', hideMiniTooltip);
+          cell.appendChild(flyout);
 
           if (preview) {
             cell.appendChild(preview);
@@ -3589,7 +3412,9 @@
 
     function formatHourLabel(hour) {
       const normalized = ((Number(hour) || 0) % 24 + 24) % 24;
-      return `${String(normalized).padStart(2, '0')}:00`;
+      const suffix = normalized < 12 ? 'a' : 'p';
+      const display = normalized % 12 === 0 ? 12 : normalized % 12;
+      return `${display}${suffix}`;
     }
 
     function getTimelineMinutesFromPointer(event, track) {
@@ -3647,17 +3472,6 @@
 
       targetTasks.sort(compareTasks);
       return true;
-    }
-
-    function toggleTaskCompletion(dateKey, taskId, completed) {
-      const tasks = state.tasks[dateKey];
-      if (!Array.isArray(tasks)) return;
-      const target = tasks.find((task) => task.id === taskId);
-      if (!target) return;
-      target.completed = Boolean(completed);
-      tasks.sort(compareTasks);
-      saveState();
-      renderCalendar();
     }
 
     document.getElementById('reset-calendar').addEventListener('click', () => {
@@ -3790,12 +3604,6 @@
       if (start) payload.start = start;
       if (durationValue != null) payload.duration = durationValue;
       if (notes) payload.notes = notes;
-
-      state.lastSelectedCategory = categoryName;
-
-      if (!editingTask) {
-        payload.completed = false;
-      }
 
       if (editingTask) {
         const tasks = ensureTasks(editingDate);
