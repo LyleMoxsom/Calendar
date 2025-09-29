@@ -21,9 +21,6 @@
       --radius-lg: 22px;
       --radius-md: 16px;
       --radius-sm: 12px;
-      --timeline-minute-height: 0.75px;
-      --timeline-gutter: 72px;
-      --mission-gold: #ffc75f;
     }
 
     * {
@@ -799,212 +796,6 @@
       color: rgba(255, 255, 255, 0.45);
     }
 
-    .task-timeline {
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-      margin-top: 12px;
-      padding: 16px;
-      border-radius: var(--radius-md);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      background: rgba(18, 18, 28, 0.92);
-      box-shadow: 0 18px 38px rgba(0, 0, 0, 0.42);
-      overflow: hidden;
-      z-index: 2;
-    }
-
-    .task-timeline::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      border-radius: inherit;
-      pointer-events: none;
-      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
-    }
-
-    .day.drag-over .task-timeline::after {
-      box-shadow: inset 0 0 0 1px rgba(106, 90, 205, 0.35);
-    }
-
-    .timeline-scroller {
-      position: relative;
-      overflow-y: auto;
-      max-height: 540px;
-      border-radius: var(--radius-sm);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      background: rgba(12, 12, 18, 0.75);
-      scrollbar-width: thin;
-      scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
-    }
-
-    .timeline-scroller::-webkit-scrollbar {
-      width: 6px;
-    }
-
-    .timeline-scroller::-webkit-scrollbar-thumb {
-      background: rgba(255, 255, 255, 0.18);
-      border-radius: 999px;
-    }
-
-    .timeline-content {
-      position: relative;
-      padding: 12px 12px 12px calc(var(--timeline-gutter) + 12px);
-      min-height: calc(1440 * var(--timeline-minute-height));
-    }
-
-    .timeline-hour-marker {
-      position: absolute;
-      left: 0;
-      right: 0;
-      height: 0;
-      pointer-events: none;
-    }
-
-    .timeline-hour-marker::after {
-      content: '';
-      position: absolute;
-      left: var(--timeline-gutter);
-      right: 0;
-      border-top: 1px solid rgba(255, 255, 255, 0.08);
-      opacity: 0.6;
-    }
-
-    .timeline-hour-marker span {
-      position: absolute;
-      left: 0;
-      transform: translateY(-50%);
-      font-size: 11px;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      color: rgba(255, 255, 255, 0.42);
-    }
-
-    .timeline-task {
-      position: absolute;
-      left: var(--timeline-gutter);
-      right: 12px;
-      border-radius: 16px;
-      padding: 12px 16px 12px 20px;
-      background:
-        linear-gradient(135deg, var(--task-color-strong, rgba(255, 255, 255, 0.2)), var(--task-color-soft, rgba(255, 255, 255, 0.06)));
-      border: 1px solid var(--task-outline, rgba(255, 255, 255, 0.18));
-      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.4);
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      cursor: grab;
-      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease;
-      overflow: hidden;
-    }
-
-    .timeline-task::before {
-      content: '';
-      position: absolute;
-      inset: 0 auto 0 0;
-      width: 4px;
-      border-radius: 16px 0 0 16px;
-      background: var(--task-pill, rgba(255, 255, 255, 0.5));
-      opacity: 0.9;
-    }
-
-    .timeline-task:active {
-      cursor: grabbing;
-    }
-
-    .timeline-task:hover,
-    .timeline-task:focus-visible {
-      transform: translateY(-2px);
-      box-shadow: 0 24px 48px rgba(0, 0, 0, 0.48);
-      border-color: var(--task-outline, rgba(255, 255, 255, 0.32));
-      outline: none;
-    }
-
-    .timeline-task.is-dragging {
-      opacity: 0.6;
-      cursor: grabbing;
-    }
-
-    .timeline-task.mission-critical {
-      border-color: rgba(255, 199, 95, 0.8);
-      box-shadow: 0 28px 58px rgba(255, 199, 95, 0.25);
-    }
-
-    .timeline-task-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-      gap: 12px;
-    }
-
-    .timeline-task-name {
-      font-size: 15px;
-      font-weight: 600;
-      letter-spacing: 0.02em;
-    }
-
-    .timeline-task-time {
-      font-size: 12px;
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-      color: rgba(255, 255, 255, 0.72);
-      white-space: nowrap;
-    }
-
-    .timeline-task-details {
-      opacity: 0;
-      max-height: 0;
-      pointer-events: none;
-      transition: opacity 0.2s ease, max-height 0.2s ease;
-      display: grid;
-      gap: 6px;
-    }
-
-    .timeline-task:hover .timeline-task-details,
-    .timeline-task:focus-visible .timeline-task-details {
-      opacity: 1;
-      max-height: 240px;
-      pointer-events: auto;
-    }
-
-    .timeline-detail-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 0.14em;
-      color: rgba(255, 255, 255, 0.7);
-    }
-
-    .timeline-detail {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .timeline-detail.mission-critical {
-      color: var(--mission-gold);
-    }
-
-    .timeline-note {
-      font-size: 12px;
-      color: rgba(255, 255, 255, 0.8);
-      line-height: 1.4;
-    }
-
-    .timeline-empty {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      font-size: 12px;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: rgba(255, 255, 255, 0.4);
-      pointer-events: none;
-    }
-
     .focus-range {
       border-color: rgba(106, 90, 205, 0.45);
       box-shadow: 0 0 0 2px rgba(106, 90, 205, 0.35);
@@ -1435,13 +1226,6 @@
       letter-spacing: 0;
     }
 
-    .checkbox-control .mission-critical-text {
-      color: var(--mission-gold);
-      font-weight: 600;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-    }
-
     .checkbox-control input[type="checkbox"] {
       width: 18px;
       height: 18px;
@@ -1554,7 +1338,7 @@
         <div class="checkbox-row">
           <label class="checkbox-control">
             <input type="checkbox" id="task-mission-critical" name="missionCritical">
-            <span class="mission-critical-text">Mission critical</span>
+            <span>Mission critical</span>
           </label>
         </div>
         <div class="field">
@@ -1634,10 +1418,6 @@
       { value: 240, label: '4 hours' },
       { value: 300, label: '5 hours' }
     ];
-
-    const MINUTES_IN_DAY = 24 * 60;
-    const TIMELINE_MINUTE_HEIGHT = 0.75;
-    document.documentElement.style.setProperty('--timeline-minute-height', `${TIMELINE_MINUTE_HEIGHT}px`);
 
     function defaultCategories() {
       return [
@@ -2296,7 +2076,7 @@
     function clearDragState() {
       draggedTask = null;
       document.querySelectorAll('.drag-over').forEach((day) => day.classList.remove('drag-over'));
-      document.querySelectorAll('.timeline-task.is-dragging').forEach((card) => card.classList.remove('is-dragging'));
+      document.querySelectorAll('.task-card.is-dragging').forEach((card) => card.classList.remove('is-dragging'));
     }
 
     function renderCategoryColorOptions() {
@@ -2795,49 +2575,6 @@
       return endTime ? `${task.start} - ${endTime}` : task.start;
     }
 
-    function createFocusBadges(projects = []) {
-      const container = document.createElement('div');
-      container.className = 'focus-badges';
-      if (!Array.isArray(projects) || projects.length === 0) {
-        return container;
-      }
-
-      container.classList.add('active');
-
-      projects.forEach((project) => {
-        const badge = document.createElement('button');
-        badge.type = 'button';
-        badge.className = 'focus-badge';
-
-        const dot = document.createElement('span');
-        dot.className = 'focus-badge-dot';
-        dot.style.background = project.color;
-        badge.appendChild(dot);
-
-        const label = document.createElement('span');
-        label.textContent = project.name;
-        badge.appendChild(label);
-
-        badge.addEventListener('click', (event) => {
-          event.stopPropagation();
-          hideMiniTooltip();
-          openFocusModal(project);
-        });
-
-        badge.addEventListener('keydown', (event) => {
-          if (event.key === 'Enter' || event.key === ' ') {
-            event.preventDefault();
-            hideMiniTooltip();
-            openFocusModal(project);
-          }
-        });
-
-        container.appendChild(badge);
-      });
-
-      return container;
-    }
-
 
     function setupFlyoutHover(cell, flyout) {
       if (!cell || !flyout) return;
@@ -2978,7 +2715,7 @@
 
           cell.addEventListener('pointerdown', (event) => {
             if (event.button !== 0 || !event.shiftKey) return;
-            if (event.target.closest('.timeline-task') || event.target.closest('.task-flyout') || event.target.closest('.add-task-btn') || event.target.closest('.focus-badge')) {
+            if (event.target.closest('.task-card') || event.target.closest('.task-flyout') || event.target.closest('.add-task-btn') || event.target.closest('.focus-badge')) {
               return;
             }
             event.preventDefault();
@@ -3038,12 +2775,42 @@
 
           const overlayStack = document.createElement('div');
           overlayStack.className = 'focus-overlay-stack';
+          const focusBadges = document.createElement('div');
+          focusBadges.className = 'focus-badges';
           activeProjects.forEach((project) => {
             const overlay = document.createElement('div');
             overlay.className = 'focus-overlay';
             overlay.style.background = hexToRgba(project.color, 0.18);
             overlayStack.appendChild(overlay);
+
+            const badge = document.createElement('button');
+            badge.type = 'button';
+            badge.className = 'focus-badge';
+            const dot = document.createElement('span');
+            dot.className = 'focus-badge-dot';
+            dot.style.background = project.color;
+            badge.appendChild(dot);
+            const label = document.createElement('span');
+            label.textContent = project.name;
+            badge.appendChild(label);
+            badge.addEventListener('click', (event) => {
+              event.stopPropagation();
+              hideMiniTooltip();
+              openFocusModal(project);
+            });
+            badge.addEventListener('keydown', (event) => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                hideMiniTooltip();
+                openFocusModal(project);
+              }
+            });
+            focusBadges.appendChild(badge);
           });
+
+          if (activeProjects.length > 0) {
+            focusBadges.classList.add('active');
+          }
 
           cell.appendChild(overlayStack);
 
@@ -3059,276 +2826,148 @@
           cell.addEventListener('mouseleave', hideMiniTooltip);
 
           const tasks = (state.tasks[dateKey] || []).slice().sort(compareTasks);
+          const hasTasks = tasks.length > 0;
 
-          const preview = document.createElement('div');
-          preview.className = 'task-preview';
+          let taskList = null;
+          let preview = null;
 
-          if (tasks.length === 0) {
-            const emptyPreview = document.createElement('div');
-            emptyPreview.className = 'task-preview-empty';
-            emptyPreview.textContent = 'No tasks planned';
-            preview.appendChild(emptyPreview);
-          } else {
-            tasks.slice(0, 3).forEach((task) => {
-              const bar = document.createElement('div');
-              bar.className = 'task-preview-bar';
-              bar.title = task.start ? `${task.title} • ${getTaskTimeRange(task)}` : task.title;
-
-              if (task.missionCritical) {
-                bar.classList.add('mission-critical');
-                bar.style.background = 'var(--mission-gold)';
-              } else {
-                const category = getCategoryByName(task.category) || ensureGeneralCategoryExists();
-                if (category?.color) {
-                  bar.style.background = hexToRgba(category.color, 0.55);
-                } else {
-                  bar.style.background = 'rgba(255, 255, 255, 0.18)';
-                }
-              }
-
-              preview.appendChild(bar);
-            });
-
-            if (tasks.length > 3) {
-              const overflow = document.createElement('div');
-              overflow.className = 'task-preview-empty';
-              overflow.textContent = `+${tasks.length - 3} more`;
-              preview.appendChild(overflow);
-            }
+          if (hasTasks) {
+            taskList = document.createElement('div');
+            taskList.className = 'task-list';
+            preview = document.createElement('div');
+            preview.className = 'task-preview';
           }
-
-          cell.appendChild(preview);
-
-          if (activeProjects.length > 0) {
-            const inlineFocusBadges = createFocusBadges(activeProjects);
-            cell.appendChild(inlineFocusBadges);
-          }
-
-          const flyout = document.createElement('div');
-          flyout.className = 'task-flyout';
-          const timelineWrapper = document.createElement('div');
-          timelineWrapper.className = 'task-timeline';
-
-          if (activeProjects.length > 0) {
-            timelineWrapper.appendChild(createFocusBadges(activeProjects));
-          }
-
-          const timelineScroller = document.createElement('div');
-          timelineScroller.className = 'timeline-scroller';
-          const timelineContent = document.createElement('div');
-          timelineContent.className = 'timeline-content';
-          timelineScroller.appendChild(timelineContent);
-          timelineWrapper.appendChild(timelineScroller);
-
-          const hourMarkers = document.createDocumentFragment();
-          for (let hour = 0; hour <= 24; hour++) {
-            const marker = document.createElement('div');
-            marker.className = 'timeline-hour-marker';
-            marker.style.top = `${hour * 60 * TIMELINE_MINUTE_HEIGHT}px`;
-            if (hour < 24) {
-              const label = document.createElement('span');
-              label.textContent = formatHourLabel(hour);
-              marker.appendChild(label);
-            }
-            hourMarkers.appendChild(marker);
-          }
-          timelineContent.appendChild(hourMarkers);
-
-          if (tasks.length === 0) {
-            const empty = document.createElement('div');
-            empty.className = 'timeline-empty';
-            empty.textContent = 'No tasks scheduled';
-            timelineContent.appendChild(empty);
-          }
-
-          let unscheduledIndex = 0;
 
           tasks.forEach((task) => {
-            const taskBlock = document.createElement('div');
-            taskBlock.className = 'timeline-task';
-            taskBlock.draggable = true;
-            taskBlock.dataset.taskId = task.id;
-            taskBlock.tabIndex = 0;
+            const taskCard = document.createElement('div');
+            taskCard.className = 'task-card';
+            taskCard.draggable = true;
+            taskCard.dataset.taskId = task.id;
 
             const category = getCategoryByName(task.category) || ensureGeneralCategoryExists();
-            const taskColor = category?.color || '#6A5ACD';
-            const tintStrong = hexToRgba(taskColor, 0.36);
-            const tintSoft = hexToRgba(taskColor, 0.12);
+            const baseColor = category?.color || '#6A5ACD';
+            const durationMinutes = Math.max(0, Number(task.duration) || 0);
+            const taskColor = baseColor;
+
+            const previewBar = document.createElement('div');
+            previewBar.className = 'task-preview-bar';
+            previewBar.style.background = hexToRgba(taskColor, 0.85);
+            preview.appendChild(previewBar);
+
+            const tintStrong = hexToRgba(taskColor, 0.38);
+            const tintSoft = hexToRgba(taskColor, 0.14);
             const outlineColor = hexToRgba(taskColor, 0.55);
-            taskBlock.style.setProperty('--task-color-strong', tintStrong);
-            taskBlock.style.setProperty('--task-color-soft', tintSoft);
-            taskBlock.style.setProperty('--task-outline', outlineColor);
-            taskBlock.style.setProperty('--task-pill', taskColor);
-
-            const rawDuration = Math.round(Number(task.duration) || 0);
-            const normalizedDuration = rawDuration > 0 ? rawDuration : 30;
-            const clampedDuration = Math.min(Math.max(normalizedDuration, 1), MINUTES_IN_DAY);
-            taskBlock.dataset.duration = String(clampedDuration);
-
-            const startMinutes = parseTimeToMinutes(task.start);
-            const maxStart = Math.max(0, MINUTES_IN_DAY - clampedDuration);
-            if (startMinutes != null) {
-              const topMinutes = Math.min(startMinutes, maxStart);
-              taskBlock.style.top = `${topMinutes * TIMELINE_MINUTE_HEIGHT}px`;
-            } else {
-              const fallbackMinutes = Math.min(unscheduledIndex * 45, maxStart);
-              taskBlock.style.top = `${fallbackMinutes * TIMELINE_MINUTE_HEIGHT}px`;
-              unscheduledIndex += 1;
-            }
-            taskBlock.style.height = `${clampedDuration * TIMELINE_MINUTE_HEIGHT}px`;
+            taskCard.style.setProperty('--task-tint-strong', tintStrong);
+            taskCard.style.setProperty('--task-tint-soft', tintSoft);
+            taskCard.style.setProperty('--task-outline', outlineColor);
+            taskCard.style.setProperty('--task-dot', taskColor);
 
             if (task.missionCritical) {
-              taskBlock.classList.add('mission-critical');
+              taskCard.classList.add('mission-critical');
+              previewBar.classList.add('mission-critical');
             }
 
-            const header = document.createElement('div');
-            header.className = 'timeline-task-header';
-            const nameEl = document.createElement('span');
-            nameEl.className = 'timeline-task-name';
-            nameEl.textContent = task.title;
-            header.appendChild(nameEl);
+            taskCard.addEventListener('dragstart', (event) => {
+              draggedTask = { id: task.id, fromDate: dateKey };
+              event.dataTransfer.effectAllowed = 'move';
+              event.dataTransfer.setData('text/plain', String(task.id));
+              taskCard.classList.add('is-dragging');
+            });
 
-            const timeRange = getTaskTimeRange(task) || task.start || 'No time set';
-            const timeEl = document.createElement('span');
-            timeEl.className = 'timeline-task-time';
-            timeEl.textContent = timeRange;
-            header.appendChild(timeEl);
-            taskBlock.appendChild(header);
+            taskCard.addEventListener('dragend', () => {
+              clearDragState();
+            });
 
-            const details = document.createElement('div');
-            details.className = 'timeline-task-details';
+            taskCard.addEventListener('dblclick', () => {
+              openTaskModal(dateKey, task);
+            });
+
+            const title = document.createElement('div');
+            title.className = 'task-title';
+
+            const colorDot = document.createElement('span');
+            colorDot.className = 'task-dot';
+            colorDot.style.background = taskColor;
+            title.appendChild(colorDot);
+
+            const name = document.createElement('span');
+            name.className = 'task-name';
+            name.textContent = task.title;
+            title.appendChild(name);
+
+            const timeRange = getTaskTimeRange(task);
+            if (timeRange) {
+              const timeEl = document.createElement('span');
+              timeEl.className = 'task-time';
+              timeEl.textContent = timeRange;
+              title.appendChild(timeEl);
+            }
+
+            taskCard.appendChild(title);
+
+            const meta = document.createElement('div');
+            meta.className = 'task-meta';
             const detailRow = document.createElement('div');
-            detailRow.className = 'timeline-detail-row';
+            detailRow.className = 'task-detail-row';
 
             if (category) {
               const categoryDetail = document.createElement('span');
-              categoryDetail.className = 'timeline-detail';
+              categoryDetail.className = 'task-detail';
               categoryDetail.textContent = category.name;
               detailRow.appendChild(categoryDetail);
             }
 
-            if (rawDuration > 0) {
+            if (durationMinutes > 0) {
               const durationDetail = document.createElement('span');
-              durationDetail.className = 'timeline-detail';
-              durationDetail.textContent = `Duration ${formatDuration(rawDuration)}`;
+              durationDetail.className = 'task-detail';
+              durationDetail.textContent = `Duration ${formatDuration(durationMinutes)}`;
               detailRow.appendChild(durationDetail);
             }
 
             if (task.missionCritical) {
               const missionDetail = document.createElement('span');
-              missionDetail.className = 'timeline-detail mission-critical';
+              missionDetail.className = 'task-detail mission-critical';
               missionDetail.textContent = 'Mission critical';
               detailRow.appendChild(missionDetail);
             }
 
             if (detailRow.children.length) {
-              details.appendChild(detailRow);
+              meta.appendChild(detailRow);
             }
 
             if (task.notes) {
               const firstLine = task.notes.split(/\r?\n/)[0].trim();
               if (firstLine) {
-                const noteLine = document.createElement('div');
-                noteLine.className = 'timeline-note';
-                noteLine.textContent = firstLine;
-                details.appendChild(noteLine);
+                const notesLine = document.createElement('div');
+                notesLine.className = 'task-note-line';
+                notesLine.textContent = firstLine;
+                meta.appendChild(notesLine);
               }
             }
 
-            if (details.children.length) {
-              taskBlock.appendChild(details);
+            if (meta.children.length) {
+              taskCard.appendChild(meta);
             }
 
-            taskBlock.addEventListener('dragstart', (event) => {
-              const rect = taskBlock.getBoundingClientRect();
-              const offset = event.clientY != null ? event.clientY - rect.top : 0;
-              draggedTask = {
-                id: task.id,
-                fromDate: dateKey,
-                offsetMinutes: offset / TIMELINE_MINUTE_HEIGHT,
-                duration: clampedDuration
-              };
-              if (event.dataTransfer) {
-                event.dataTransfer.effectAllowed = 'move';
-                event.dataTransfer.setData('text/plain', String(task.id));
-                try {
-                  event.dataTransfer.setDragImage(taskBlock, event.clientX - rect.left, offset);
-                } catch (err) {
-                  // Ignore drag image issues in unsupported browsers.
-                }
-              }
-              taskBlock.classList.add('is-dragging');
-            });
-
-            taskBlock.addEventListener('dragend', () => {
-              taskBlock.classList.remove('is-dragging');
-              clearDragState();
-            });
-
-            taskBlock.addEventListener('dblclick', () => {
-              openTaskModal(dateKey, task);
-            });
-
-            taskBlock.addEventListener('keydown', (event) => {
-              if (event.key === 'Enter') {
-                event.preventDefault();
-                openTaskModal(dateKey, task);
-              }
-            });
-
-            timelineContent.appendChild(taskBlock);
+            taskList.appendChild(taskCard);
           });
 
-          timelineScroller.addEventListener('scroll', () => {
-            timelineScroller.dataset.manualScroll = 'true';
-          }, { once: true });
+          let flyout = null;
 
-          timelineScroller.addEventListener('dragover', (event) => {
-            if (!draggedTask) return;
-            event.preventDefault();
-            event.dataTransfer.dropEffect = 'move';
-            cell.classList.add('drag-over');
-          });
+          if (hasTasks && preview) {
+            cell.appendChild(preview);
+          }
 
-          timelineScroller.addEventListener('dragleave', (event) => {
-            if (!timelineScroller.contains(event.relatedTarget)) {
-              cell.classList.remove('drag-over');
+          if (hasTasks && taskList) {
+            flyout = document.createElement('div');
+            flyout.className = 'task-flyout';
+            if (activeProjects.length > 0) {
+              flyout.appendChild(focusBadges);
             }
-          });
-
-          timelineScroller.addEventListener('drop', (event) => {
-            if (!draggedTask) {
-              clearDragState();
-              return;
-            }
-            event.preventDefault();
-            event.stopPropagation();
-            cell.classList.remove('drag-over');
-            const rect = timelineContent.getBoundingClientRect();
-            const offset = event.clientY - rect.top + timelineScroller.scrollTop;
-            const pointerMinutes = Math.max(0, offset / TIMELINE_MINUTE_HEIGHT);
-            const rounded = Math.round(pointerMinutes / 15) * 15;
-            const duration = Math.max(1, Math.round(Number(draggedTask.duration) || 30));
-            const maxStart = Math.max(0, MINUTES_IN_DAY - duration);
-            const pointerOffset = Number(draggedTask.offsetMinutes) || 0;
-            let startMinutes = Math.max(0, rounded - pointerOffset);
-            startMinutes = Math.min(startMinutes, maxStart);
-            const newStart = minutesToTime(startMinutes);
-            moveTaskToDate(draggedTask, dateKey, { newStart });
-            clearDragState();
-          });
-
-          flyout.appendChild(timelineWrapper);
-          cell.appendChild(flyout);
-          setupFlyoutHover(cell, flyout);
-
-          requestAnimationFrame(() => {
-            if (!timelineScroller.dataset.manualScroll) {
-              const defaultMinutes = 8 * 60;
-              const target = Math.max(0, defaultMinutes * TIMELINE_MINUTE_HEIGHT);
-              timelineScroller.scrollTop = target;
-            }
-          });
+            flyout.appendChild(taskList);
+            flyout.addEventListener('mouseenter', hideMiniTooltip);
+            cell.appendChild(flyout);
+          }
 
           if (realTodayKey === dateKey) {
             const progress = document.createElement('div');
@@ -3337,6 +2976,9 @@
           }
 
           monthGrid.appendChild(cell);
+          if (flyout) {
+            setupFlyoutHover(cell, flyout);
+          }
         }
 
         calendarGridEl.appendChild(monthBlock);
@@ -3358,46 +3000,20 @@
       }
     }
 
-    function parseTimeToMinutes(value) {
-      if (!value || typeof value !== 'string') return null;
-      const [hoursRaw, minutesRaw] = value.split(':');
-      const hours = Number(hoursRaw);
-      const minutes = Number(minutesRaw);
-      if (!Number.isFinite(hours) || !Number.isFinite(minutes)) return null;
-      const total = hours * 60 + minutes;
-      return Math.max(0, Math.min(MINUTES_IN_DAY - 1, total));
-    }
-
-    function minutesToTime(totalMinutes) {
-      let normalized = Math.round(Number(totalMinutes) || 0);
-      if (!Number.isFinite(normalized)) normalized = 0;
-      normalized = ((normalized % MINUTES_IN_DAY) + MINUTES_IN_DAY) % MINUTES_IN_DAY;
-      const hours = Math.floor(normalized / 60);
-      const minutes = normalized % 60;
-      return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
-    }
-
-    function formatHourLabel(hour) {
-      const normalized = ((Number(hour) || 0) % 24 + 24) % 24;
-      return `${String(normalized).padStart(2, '0')}:00`;
-    }
-
     function computeEndTime(start, duration) {
-      const parsed = parseTimeToMinutes(start);
-      if (parsed == null) return start;
-      const totalMinutes = parsed + Math.round(Math.max(0, Number(duration || 0)));
-      return minutesToTime(totalMinutes);
+      const [hours, minutes] = start.split(':').map(Number);
+      const totalMinutes = hours * 60 + minutes + Math.round(Math.max(0, Number(duration || 0)));
+      const endHours = Math.floor(totalMinutes / 60) % 24;
+      const endMinutes = totalMinutes % 60;
+      return `${String(endHours).padStart(2, '0')}:${String(endMinutes).padStart(2, '0')}`;
     }
 
-    function moveTaskToDate(taskInfo, newDateKey, options = {}) {
+    function moveTaskToDate(taskInfo, newDateKey) {
       const fromTasks = state.tasks[taskInfo.fromDate] || [];
       const taskIndex = fromTasks.findIndex((t) => t.id === taskInfo.id);
       if (taskIndex === -1) return;
 
       const [task] = fromTasks.splice(taskIndex, 1);
-      if (options.newStart) {
-        task.start = options.newStart;
-      }
       if (!state.tasks[newDateKey]) state.tasks[newDateKey] = [];
       state.tasks[newDateKey].push(task);
 
