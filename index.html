@@ -666,6 +666,8 @@
       align-items: center;
       justify-content: space-between;
       gap: 8px;
+      position: relative;
+      z-index: 3;
     }
 
     .day-number {
@@ -727,6 +729,8 @@
       gap: 4px;
       min-height: 32px;
       pointer-events: none;
+      position: relative;
+      z-index: 2;
     }
 
     .task-preview-bar {
@@ -1198,6 +1202,7 @@
       align-content: stretch;
       gap: 6px;
       padding: 6px;
+      z-index: 1;
     }
 
     .focus-overlay {
@@ -1264,6 +1269,7 @@
       background: linear-gradient(90deg, var(--accent), rgba(255, 105, 180, 0.9));
       border-radius: 0 4px 0 0;
       pointer-events: none;
+      z-index: 2;
     }
 
     .modal-backdrop {
